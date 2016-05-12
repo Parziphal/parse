@@ -170,7 +170,7 @@ trait ModelMethods
     
     public static function __callStatic($method, array $params)
     {
-        return static::query()->{$method}(...$params);
+        return call_user_func_array([static::query(), $method], $params);
     }
     
     /**
