@@ -1,0 +1,13 @@
+{
+    "name": "parziphal/parse",
+    "description": "Work with Parse in Laravel.",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Parziphal\\Parse\\": "src/"
+        }
+    }
+}
