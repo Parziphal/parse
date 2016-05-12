@@ -3,7 +3,7 @@
     "description": "Work with Parse in Laravel.",
     "license": "MIT",
     "require": {
-        "php": ">=5.4"
+        "php": ">=5.6"
     },
     "autoload": {
         "psr-4": {
