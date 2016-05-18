@@ -4,6 +4,7 @@ namespace Parziphal\Parse;
 
 use Traversable;
 use LogicException;
+use JsonSerializable;
 use Parse\ParseObject;
 use ReflectionProperty;
 use Illuminate\Support\Arr;
@@ -15,7 +16,7 @@ use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Arrayable;
 use Parziphal\Parse\Relations\HasManyArray;
 
-abstract class ObjectModel implements Arrayable, Jsonable
+abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 {
     /**
      * This property controls which protected keys (objectId, createdAt, updatedAt)
@@ -275,14 +276,14 @@ abstract class ObjectModel implements Arrayable, Jsonable
         $array = [];
         
         foreach ($keys as $key) {
-            $value = $this->get($key);
-            
             // Convert to array only loaded relations. Non-loaded
             // relations are ignored.
             if ($this->isRelation($key)) {
                 if ($this->relationLoaded($key)) {
+                    $value = $this->getRelationValue($key);
+                    
                     if ($value instanceof self) {
-                        $array[$key] = $value;
+                        $array[$key] = $value->toArray();
                     } else {
                         // Special cases with some relations.
                         switch (get_class($value)) {
@@ -299,6 +300,8 @@ abstract class ObjectModel implements Arrayable, Jsonable
                 
                 continue;
             }
+            
+            $value = $this->get($key);
             
             if ($value instanceof self || $value instanceof Collection) {
                 $array[$key] = $value->toArray();

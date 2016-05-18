@@ -20,6 +20,11 @@ class Query
     ];
     
     /**
+     * @var array
+     */
+    protected $includeKeys = [];
+    
+    /**
      * @var ParseQuery
      */
     protected $parseQuery;
@@ -426,6 +431,8 @@ class Query
             $keys = func_get_args();
         }
         
+        $this->includeKeys = array_merge($this->includeKeys, $keys);
+        
         $this->parseQuery->includeKey($keys);
         
         return $this;
@@ -443,7 +450,18 @@ class Query
     {
         $className = $this->fullClassName;
         
-        return new $className($data);
+        $model = new $className($data);
+        
+        if ($this->includeKeys) {
+            // Force model to load into its relations array the eager-loaded
+            // relations. If not, non-loaded relations won't be included when
+            // calling toArray() on the model.
+            foreach ($this->includeKeys as $key) {
+                $model->getRelationValue($key);
+            }
+        }
+        
+        return $model;
     }
     
     /**
