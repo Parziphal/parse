@@ -8,12 +8,26 @@ use Parse\ParseObject;
 use ReflectionProperty;
 use Illuminate\Support\Arr;
 use Parse\Internal\Encodable;
+use Parziphal\Parse\Relations\HasMany;
 use Parziphal\Parse\Relations\Relation;
+use Parziphal\Parse\Relations\BelongsTo;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Arrayable;
+use Parziphal\Parse\Relations\HasManyArray;
 
 abstract class ObjectModel implements Arrayable, Jsonable
 {
+    /**
+     * This property controls which protected keys (objectId, createdAt, updatedAt)
+     * are exposed in getServerData(). Null means no key is exposed, an empty array
+     * means all keys are exposed, and listing explicit keys will expose those keys.
+     * It can be used as a global configuration or per-class.
+     * Note that `objectId` is exposed as `id`.
+     *
+     * @var array
+     */
+    public static $exposeKeys;
+    
     protected static $parseClassName;
     
     /**
@@ -153,7 +167,7 @@ abstract class ObjectModel implements Arrayable, Jsonable
             return $this->id();
         }
         
-        if (method_exists($this, $key)) {
+        if ($this->isRelation($key)) {
             return $this->getRelationValue($key);
         }
         
@@ -168,7 +182,7 @@ abstract class ObjectModel implements Arrayable, Jsonable
             return $this->relations[$key];
         }
 
-        if (method_exists($this, $key)) {
+        if ($this->isRelation($key)) {
             return $this->getRelationshipFromMethod($key);
         }
     }
@@ -183,6 +197,11 @@ abstract class ObjectModel implements Arrayable, Jsonable
         $this->relations[$relation] = $value;
 
         return $this;
+    }
+    
+    public function isRelation($name)
+    {
+        return method_exists($this, $name);
     }
     
     public function id()
@@ -251,9 +270,48 @@ abstract class ObjectModel implements Arrayable, Jsonable
     
     public function toArray()
     {
-        $arr = $this->toArrayDeep($this->getServerData());
+        $keys = array_keys($this->getServerData());
         
-        return $arr;
+        $array = [];
+        
+        foreach ($keys as $key) {
+            $value = $this->get($key);
+            
+            // Convert to array only loaded relations. Non-loaded
+            // relations are ignored.
+            if ($this->isRelation($key)) {
+                if ($this->relationLoaded($key)) {
+                    if ($value instanceof self) {
+                        $array[$key] = $value;
+                    } else {
+                        // Special cases with some relations.
+                        switch (get_class($value)) {
+                            case HasManyArray::class:
+                                $array[$key] = $value->getCollection()->toArray();
+                                break;
+                            
+                            default:
+                                $array[$key] = $value->getResults();
+                                break;
+                        }
+                    }
+                }
+                
+                continue;
+            }
+            
+            if ($value instanceof self || $value instanceof Collection) {
+                $array[$key] = $value->toArray();
+            } elseif ($value instanceof ParseObject) {
+                $array[$key] = $this->exposeServerData($value);
+            } else {
+                $array[$key] = $value;
+            }
+        }
+        
+        $this->setProtectedKeys($array);
+        
+        return $array;
     }
     
     public function toJson($options = 0)
@@ -273,9 +331,38 @@ abstract class ObjectModel implements Arrayable, Jsonable
     {
         $data = $this->exposeServerData($this->parseObject);
         
-        $data['id'] = $this->getObjectId();
+        $this->setProtectedKeys($data);
         
         return $data;
+    }
+    
+    protected function setProtectedKeys(array &$data)
+    {
+        if (static::$exposeKeys === null) {
+            return;
+        }
+        
+        if (!static::$exposeKeys) {
+            $data['id']        = $this->getObjectId();
+            $data['createdAt'] = $this->getCreatedAt();
+            $data['updatedAt'] = $this->getUpdatedAt();
+        } else {
+            foreach (static::$exposeKeys as $key) {
+                switch ($key) {
+                    case 'objectId':
+                        $data['id'] = $this->getObjectId();
+                        break;
+                    
+                    case 'createdAt':
+                        $data['createdAt'] = $this->getCreatedAt();
+                        break;
+                    
+                    case 'updatedAt':
+                        $data['updatedAt'] = $this->getUpdatedAt();
+                        break;
+                }
+            }
+        }
     }
     
     /**
@@ -309,7 +396,7 @@ abstract class ObjectModel implements Arrayable, Jsonable
             $key = $this->getCallerFunctionName();
         }
         
-        return new Relations\HasManyArray($otherClass, $key, $this);
+        return new HasManyArray($otherClass, $key, $this);
     }
     
     protected function belongsTo($otherClass, $key = null)
@@ -318,7 +405,7 @@ abstract class ObjectModel implements Arrayable, Jsonable
             $key = $this->getCallerFunctionName();
         }
         
-        return new Relations\BelongsTo($otherClass, $key, $this);
+        return new BelongsTo($otherClass, $key, $this);
     }
     
     protected function hasMany($otherClass, $key = null)
@@ -327,7 +414,7 @@ abstract class ObjectModel implements Arrayable, Jsonable
             $key = lcfirst(static::parseClassName());
         }
         
-        return new Relations\HasMany($otherClass::query(), $this, $key);
+        return new HasMany($otherClass::query(), $this, $key);
     }
     
     protected function getRelationshipFromMethod($method)
@@ -349,30 +436,6 @@ abstract class ObjectModel implements Arrayable, Jsonable
     protected function getCallerFunctionName()
     {
         return debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2]['function'];
-    }
-    
-    /**
-     * Helps with converting all relations into arrays.
-     *
-     * @param array $data
-     *
-     * @return array
-     */
-    protected function toArrayDeep(array $data)
-    {
-        $array = [];
-        
-        foreach ($data as $key => $value) {
-            if ($value instanceof ParseObject) {
-                $array[$key] = $this->toArrayDeep($this->exposeServerData($value));
-            } elseif (is_array($value) || $value instanceof Traversable) {
-                $array[$key] = $this->toArrayDeep($value);
-            } else {
-                $array[$key] = $value;
-            }
-        }
-        
-        return $array;
     }
     
     /**

@@ -46,6 +46,11 @@ class HasManyArray extends Relation
         return $this;
     }
     
+    public function getCollection()
+    {
+        return $this->collection;
+    }
+    
     /**
      * Save one or more children to this relation. The children
      * will have a pointer created to the parent in a key named
