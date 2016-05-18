@@ -51,9 +51,9 @@ trait ObjectModelMethods
      *
      * @return Query
      */
-    public static function query()
+    public static function query($useMasterKey = false)
     {
-        return new Query(static::parseClassName(), static::class);
+        return new Query(static::parseClassName(), static::class, $useMasterKey);
     }
     
     /**
