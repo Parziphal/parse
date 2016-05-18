@@ -56,8 +56,6 @@ class ParseServiceProvider extends ServiceProvider
             return new ParseUserProvider($config['model']);
         });
         
-        // UserModel::setCurrentUserModel($config['user_class']);
-        
         ParseClient::setStorage(new SessionStorage());
         
         ParseClient::initialize($config['app_id'], $config['rest_key'], $config['master_key']);
