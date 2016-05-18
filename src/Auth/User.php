@@ -26,4 +26,9 @@ class User extends UserModel implements
     {
         return $this->id();
     }
+    
+    public function getRememberTokenName()
+    {
+        return 'rememberToken';
+    }
 }

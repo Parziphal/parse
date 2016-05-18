@@ -29,7 +29,7 @@ class ParseUserProvider implements UserProvider
     {
         $class = $this->userClass;
         
-        return $class::query()->get($identifier) ?: null;
+        return $class::query(true)->find($identifier) ?: null;
     }
 
     /**
@@ -43,10 +43,10 @@ class ParseUserProvider implements UserProvider
     {
         $class = $this->userClass;
         
-        return $class::where([
+        return $class::query(true)->where([
             'objectId'      => $identifier,
             'rememberToken' => $token
-        ])->first(true);
+        ])->first();
     }
 
     /**
@@ -73,7 +73,7 @@ class ParseUserProvider implements UserProvider
         
         $username = $this->getUsernameFromCredentials($credentials);
         
-        return $class::where(['username' => $username])->first(true);
+        return $class::query(true)->where(['username' => $username])->first();
     }
 
     /**
