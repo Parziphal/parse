@@ -3,50 +3,38 @@
 namespace Parziphal\Parse;
 
 use Parse\ParseUser;
-use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Contracts\Support\Arrayable;
 
-class UserModel extends ParseUser implements Jsonable, Arrayable
+class UserModel extends ObjectModel
 {
-    use ModelMethods;
+    protected static $parseClassName = '_User';
     
-    protected $keyName = '_id';
+    /**
+     * These static methods in ParseUser return a new
+     * instance of that class.
+     */
+    protected static $parseUserStaticMethods = [
+        'logIn',
+        'logInWithFacebook',
+        'loginWithAnonymous',
+        'become',
+    ];
     
-    protected static $currentUserModel;
-    
-    public function getKeyName()
+    public static function __callStatic($method, array $params)
     {
-        return $this->keyName;
-    }
-    
-    public function getKey()
-    {
-        return $this->getObjectId();
-    }
-    
-    public static function setCurrentUserModel($fullClassName)
-    {
-        self::$currentUserModel = $fullClassName;
-    }
-    
-    public static function getCurrentUser()
-    {
-        $user = parent::getCurrentUser();
-        
-        if ($user) {
-            $sessionToken = $user->getSessionToken();
-            
-            if (self::$currentUserModel) {
-                $class = self::$currentUserModel;
-                
-                $user = $class::createExisting($user);
-            } else {
-                $user = static::createExisting($user);
-            }
-            
-            $user->_sessionToken = $sessionToken;
+        if (in_array($method, self::$parseUserStaticMethods)) {
+            return new static(call_user_func_array(ParseUser::class . '::' . $method, $params)); 
         }
         
-        return $user;
+        return parent::__callStatic($method, $params);
+    }
+    
+    public function linkWithFacebook($id, $accessToken, $expirationDate = null, $useMasterKey = false)
+    {
+        return new static($this->parseObject->loginWithAnonymous(
+            $id,
+            $accessToken,
+            $expirationDate,
+            $useMasterKey
+        ));
     }
 }

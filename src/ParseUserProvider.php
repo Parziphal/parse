@@ -9,6 +9,16 @@ use Parse\ParseException;
 
 class ParseUserProvider implements UserProvider
 {
+    protected $userClass;
+    
+    /**
+     * @param string $userClass
+     */
+    public function __construct($userClass)
+    {
+        $this->userClass = $userClass;
+    }
+    
     /**
      * Retrieve a user by their unique identifier.
      *
@@ -17,7 +27,9 @@ class ParseUserProvider implements UserProvider
      */
     public function retrieveById($identifier)
     {
-        return UserModel::query()->get($identifier) ?: null;
+        $class = $this->userClass;
+        
+        return $class::query()->get($identifier) ?: null;
     }
 
     /**
@@ -29,10 +41,12 @@ class ParseUserProvider implements UserProvider
      */
     public function retrieveByToken($identifier, $token)
     {
-        return UserModel::query()->where([
-            '_id' => $identifier,
-            'remember_token' => $token
-        ])->first(true) ?: null;
+        $class = $this->userClass;
+        
+        return $class::where([
+            'objectId'      => $identifier,
+            'rememberToken' => $token
+        ])->first(true);
     }
 
     /**
@@ -44,7 +58,7 @@ class ParseUserProvider implements UserProvider
      */
     public function updateRememberToken(Authenticatable $user, $token)
     {
-        $user->update(['remember_token' => $token], true);
+        $user->update(['rememberToken' => $token], true);
     }
 
     /**
@@ -55,9 +69,11 @@ class ParseUserProvider implements UserProvider
      */
     public function retrieveByCredentials(array $credentials)
     {
+        $class = $this->userClass;
+        
         $username = $this->getUsernameFromCredentials($credentials);
         
-        return UserModel::where(['username' => $username])->first(true) ?: null;
+        return $class::where(['username' => $username])->first(true);
     }
 
     /**

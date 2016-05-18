@@ -53,10 +53,10 @@ class ParseServiceProvider extends ServiceProvider
         $config = $this->app->config->get('parse');
         
         Auth::provider('parse', function($app, array $config) {
-            return new ParseUserProvider($app);
+            return new ParseUserProvider($config['model']);
         });
         
-        UserModel::setCurrentUserModel($config['user_class']);
+        // UserModel::setCurrentUserModel($config['user_class']);
         
         ParseClient::setStorage(new SessionStorage());
         

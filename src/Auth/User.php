@@ -16,4 +16,14 @@ class User extends UserModel implements
     CanResetPasswordContract
 {
     use Authenticatable, Authorizable, CanResetPassword;
+    
+    public function getKeyName()
+    {
+        return 'objectId';
+    }
+    
+    public function getKey()
+    {
+        return $this->id();
+    }
 }
