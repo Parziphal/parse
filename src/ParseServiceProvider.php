@@ -2,12 +2,12 @@
 
 namespace Parziphal\Parse;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\ServiceProvider;
-use Parziphal\Parse\ParseUserProvider;
-use Parziphal\Parse\ParseGuard;
-use Parziphal\Parse\SessionStorage;
 use Parse\ParseClient;
+use Parziphal\Parse\SessionStorage;
+use Illuminate\Support\Facades\Auth;
+use Parziphal\Parse\ParseUserProvider;
+use Illuminate\Support\ServiceProvider;
+use Parziphal\Parse\Console\ModelMakeCommand;
 use Laravel\Lumen\Application as LumenApplication;
 use Illuminate\Foundation\Application as LaravelApplication;
 
@@ -21,8 +21,10 @@ class ParseServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->setupConfig();
-
+        
         $this->setupParse();
+        
+        $this->registerCommands();
     }
    
     /**
@@ -42,25 +44,37 @@ class ParseServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom($source, 'parse');
     }
+    
+    protected function registerCommands()
+    {
+        $this->registerModelMakeCommand();
+        
+        $this->commands('command.parse.model.make');
+    }
+    
+    protected function registerModelMakeCommand()
+    {
+        $this->app->singleton('command.parse.model.make', function ($app) {
+            return new ModelMakeCommand($app['files']);
+        });
+    }
 
     /**
      * Setup parse.
      *
      * @return void
-     */ 
+     */
     protected function setupParse()
     {
         $config = $this->app->config->get('parse');
         
+        ParseClient::setStorage(new SessionStorage());
+        ParseClient::initialize($config['app_id'], $config['rest_key'], $config['master_key']);
+        ParseClient::setServerURL($config['server_url']);
+        
         Auth::provider('parse', function($app, array $config) {
             return new ParseUserProvider($config['model']);
         });
-        
-        ParseClient::setStorage(new SessionStorage());
-        
-        ParseClient::initialize($config['app_id'], $config['rest_key'], $config['master_key']);
-
-        ParseClient::setServerURL($config['server_url']);
     }
 
     /**
