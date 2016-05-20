@@ -15,8 +15,8 @@ class Query
         '!=' => 'notEqualTo',
         '>'  => 'greaterThan',
         '>=' => 'greaterThanOrEqual',
-        '<'  => 'lowerThan',
-        '<=' => 'lowerThanOrEqual',
+        '<'  => 'lessThan',
+        '<=' => 'lessThanOrEqual',
     ];
     
     /**
@@ -190,7 +190,7 @@ class Query
                 throw new Exception("Invalid operator: " . $operator);
             }
             
-            call_user_func([$this->parseQuery, self::$operators[$operator]], $value);
+            call_user_func([$this->parseQuery, self::$operators[$operator]], $key, $value);
         }
         
         return $this;
