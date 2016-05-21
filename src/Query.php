@@ -14,9 +14,9 @@ class Query
         '='  => 'equalTo',
         '!=' => 'notEqualTo',
         '>'  => 'greaterThan',
-        '>=' => 'greaterThanOrEqual',
+        '>=' => 'greaterThanOrEqualTo',
         '<'  => 'lessThan',
-        '<=' => 'lessThanOrEqual',
+        '<=' => 'lessThanOrEqualTo',
     ];
     
     /**
