@@ -1,6 +1,7 @@
 {
     "name": "parziphal/parse",
     "description": "Work with Parse in Laravel.",
+    "tags": ["laravel", "parse", "sdk", "parse-sdk", "eloquent"],
     "license": "MIT",
     "require": {
         "laravel/framework": "5.2.*",
