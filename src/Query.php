@@ -18,32 +18,32 @@ class Query
         '<'  => 'lessThan',
         '<=' => 'lessThanOrEqualTo',
     ];
-    
+
     /**
      * @var array
      */
     protected $includeKeys = [];
-    
+
     /**
      * @var ParseQuery
      */
     protected $parseQuery;
-    
+
     /**
      * @var string
      */
     protected $fullClassName;
-    
+
     /**
      * @var string
      */
     protected $parseClassName;
-    
+
     /**
      * @var bool
      */
     protected $useMasterKey;
-    
+
     /**
      * Pass Query, ParseQuery or Closure, as params or in an
      * array. If Closure is passed, a new Query will be passed
@@ -63,39 +63,39 @@ class Query
     public static function orQueries()
     {
         $queries = func_get_args();
-        
+
         if (is_array($queries[0])) {
             $queries = $queries[0];
         }
-        
+
         $q = $queries[0];
         $parseQueries = [];
-        
+
         foreach ($queries as $query) {
             if ($query instanceof Closure) {
                 $closure = $query;
-                
+
                 $query = new static($q->parseClassName, $q->fullClassName, $q->useMasterKey);
-                
+
                 $closure($query);
-                
+
                 $parseQueries[] = $query;
             } else {
                 $parseQueries[] = $q->parseQueryFromQuery($query);
             }
         }
-        
+
         $orQuery = new static(
             $queries[0]->parseClassName,
             $queries[0]->fullClassName,
             $queries[0]->useMasterKey
         );
-        
+
         $orQuery->parseQuery = ParseQuery::orQueries($parseQueries);
-        
+
         return $orQuery;
     }
-    
+
     public function __construct($parseClassName, $fullClassName, $useMasterKey = false)
     {
         $this->parseClassName = $parseClassName;
@@ -103,7 +103,7 @@ class Query
         $this->fullClassName  = $fullClassName;
         $this->useMasterKey   = $useMasterKey;
     }
-    
+
     /**
      * Instance calls are passed to the Parse Query.
      *
@@ -112,26 +112,26 @@ class Query
     public function __call($method, array $params)
     {
         $ret = call_user_func_array([$this->parseQuery, $method], $params);
-        
+
         if ($ret === $this->parseQuery) {
             return $this;
         }
-        
+
         return $ret;
     }
-    
+
     public function __clone()
     {
         $this->parseQuery = clone $this->parseQuery;
     }
-    
+
     public function useMasterKey($value)
     {
         $this->useMasterKey = $value;
-        
+
         return $this;
     }
-    
+
     /**
      * @return string
      */
@@ -139,7 +139,7 @@ class Query
     {
         return $this->fullClassName;
     }
-    
+
     /**
      * @param mixed $queries
      *
@@ -148,16 +148,16 @@ class Query
     public function orQuery()
     {
         $queries = func_get_args();
-        
+
         if (is_array($queries[0])) {
             $queries = $queries[0];
         }
-        
+
         array_unshift($queries, $this);
-        
+
         return static::orQueries($queries);
     }
-    
+
     /**
      * ```
      * $query->where($key, '=', $value);
@@ -171,31 +171,31 @@ class Query
     {
         if (is_array($key)) {
             $where = $key;
-            
+
             foreach ($where as $key => $value) {
                 if ($value instanceof ObjectModel) {
                     $value = $value->getParseObject();
                 }
-                
+
                 $this->parseQuery->equalTo($key, $value);
             }
         } elseif (func_num_args() == 2) {
             if ($operator instanceof ObjectModel) {
                 $operator = $operator->getParseObject();
             }
-            
+
             $this->parseQuery->equalTo($key, $operator);
         } else {
             if (!array_key_exists($operator, self::$operators)) {
                 throw new Exception("Invalid operator: " . $operator);
             }
-            
+
             call_user_func([$this->parseQuery, self::$operators[$operator]], $key, $value);
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Find a record by Object ID.
      *
@@ -207,10 +207,10 @@ class Query
     public function find($objectId, $selectKeys = null)
     {
         $this->parseQuery->equalTo('objectId', $objectId);
-        
+
         return $this->first($selectKeys);
     }
-    
+
     /**
      * Find a record by Object ID or throw an
      * exception otherwise.
@@ -225,10 +225,10 @@ class Query
     public function findOrFail($objectId, $selectKeys = null)
     {
         $this->parseQuery->equalTo('objectId', $objectId);
-        
+
         return $this->firstOrFail($selectKeys);
     }
-    
+
     /**
      * Find a record by Object ID or return a new
      * instance otherwise.
@@ -241,16 +241,16 @@ class Query
     public function findOrNew($objectId, $selectKeys = null)
     {
         $record = $this->find($objectId, $selectKeys);
-        
+
         if (!$record) {
             $class = $this->fullClassName;
-            
+
             $record = new $class();
         }
-        
+
         return $record;
     }
-    
+
     /**
      * Get the first record that matches the query.
      *
@@ -263,14 +263,14 @@ class Query
         if ($selectKeys) {
             $this->parseQuery->select($selectKeys);
         }
-        
+
         $data = $this->parseQuery->first($this->useMasterKey);
-        
+
         if ($data) {
             return $this->createModel($data);
         }
     }
-    
+
     /**
      * Get the first record that matches the query
      * or throw an exception otherwise.
@@ -285,18 +285,18 @@ class Query
     public function firstOrFail($selectKeys = null)
     {
         $first = $this->first($selectKeys);
-        
+
         if (!$first) {
             $e = new ModelNotFoundException();
-            
+
             $e->setModel($this->fullClassName);
-            
+
             throw $e;
         }
-        
+
         return $first;
     }
-    
+
     /**
      * Get the first record that matches the query
      * or return a new instance otherwise.
@@ -308,16 +308,16 @@ class Query
     public function firstOrNew(array $data)
     {
         $record = $this->where($data)->first();
-        
+
         if ($record) {
             return $record;
         }
-        
+
         $class = $this->fullClassName;
-        
+
         return new $class($data);
     }
-    
+
     /**
      * Get the first record that matches the query
      * or create it otherwise.
@@ -329,14 +329,14 @@ class Query
     public function firstOrCreate(array $data)
     {
         $record = $this->firstOrNew($data);
-        
+
         if (!$record->id) {
             $record->save();
         }
-        
+
         return $record;
     }
-    
+
     /**
      * Executes the query and returns its results.
      *
@@ -349,10 +349,10 @@ class Query
         if ($selectKeys) {
             $this->select($selectKeys);
         }
-        
+
         return $this->createModels($this->parseQuery->find($this->useMasterKey));
     }
-    
+
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
@@ -367,7 +367,7 @@ class Query
 
         return $this;
     }
-    
+
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
@@ -382,7 +382,7 @@ class Query
 
         return $this;
     }
-    
+
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
@@ -397,7 +397,7 @@ class Query
 
         return $this;
     }
-    
+
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
@@ -412,16 +412,16 @@ class Query
 
         return $this;
     }
-    
+
     public function count()
     {
         return $this->parseQuery->count($this->useMasterKey);
     }
-    
+
     /**
      * Alias for ParseQuery's includeKey.
      *
-     * @param mixed $keys
+     * @param string|array $keys
      *
      * @return $this
      */
@@ -430,14 +430,14 @@ class Query
         if (is_string($keys)) {
             $keys = func_get_args();
         }
-        
+
         $this->includeKeys = array_merge($this->includeKeys, $keys);
-        
+
         $this->parseQuery->includeKey($keys);
-        
+
         return $this;
     }
-    
+
     /**
      * @return ParseQuery
      */
@@ -445,13 +445,13 @@ class Query
     {
         return $this->parseQuery;
     }
-    
+
     protected function createModel(ParseObject $data)
     {
         $className = $this->fullClassName;
-        
+
         $model = new $className($data);
-        
+
         if ($this->includeKeys) {
             // Force model to load into its relations array the eager-loaded
             // relations. If not, non-loaded relations won't be included when
@@ -460,10 +460,10 @@ class Query
                 $model->getRelationValue($key);
             }
         }
-        
+
         return $model;
     }
-    
+
     /**
      * @param array $objects ParseObject[]
      *
@@ -473,14 +473,14 @@ class Query
     {
         $className = $this->fullClassName;
         $models    = [];
-        
+
         foreach ($objects as $object) {
             $models[] = $this->createModel($object);
         }
-        
+
         return new Collection($models);
     }
-    
+
     /**
      * @param  Query|ParseQuery $query
      *
