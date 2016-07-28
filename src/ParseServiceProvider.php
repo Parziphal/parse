@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Parziphal\Parse\ParseUserProvider;
 use Illuminate\Support\ServiceProvider;
 use Parziphal\Parse\Console\ModelMakeCommand;
+use Parziphal\Parse\Auth\Providers\UserProvider;
 use Laravel\Lumen\Application as LumenApplication;
+use Parziphal\Parse\Auth\Providers\AnyUserProvider;
+use Parziphal\Parse\Auth\Providers\FacebookUserProvider;
 use Illuminate\Foundation\Application as LaravelApplication;
 
 class ParseServiceProvider extends ServiceProvider
@@ -73,7 +76,15 @@ class ParseServiceProvider extends ServiceProvider
         ParseClient::setServerURL($config['server_url']);
         
         Auth::provider('parse', function($app, array $config) {
-            return new ParseUserProvider($config['model']);
+            return new UserProvider($config['model']);
+        });
+        
+        Auth::provider('parse-facebook', function($app, array $config) {
+            return new FacebookUserProvider($config['model']);
+        });
+        
+        Auth::provider('parse-any', function($app, array $config) {
+            return new AnyUserProvider($config['model']);
         });
     }
 
