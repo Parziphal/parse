@@ -8,7 +8,6 @@ use LogicException;
 use Parse\ParseFile;
 use JsonSerializable;
 use Parse\ParseObject;
-use ReflectionProperty;
 use Illuminate\Support\Arr;
 use Parse\Internal\Encodable;
 use Parziphal\Parse\Relations\HasMany;
@@ -21,11 +20,6 @@ use Parziphal\Parse\Relations\HasManyArray;
 abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 {
     protected static $parseClassName;
-
-    /**
-     * @var ReflectionProperty
-     */
-    protected static $serverDataProp;
 
     protected $parseObject;
 
