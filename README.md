@@ -48,7 +48,7 @@ You can use the `Parziphal\Parse\Auth\AuthenticatesWithFacebook` trait in your a
 
 ## ObjectModels
 
-The `Parziphal\Parse\ObjectModel` class is a wrapper for `Parse\ParseObject`. It behaves as a Eloquent model, so you could do stuff like:
+The `Parziphal\Parse\ObjectModel` class is a wrapper for `Parse\ParseObject`. It behaves as an Eloquent model, so you could do stuff like:
 
 ```php
 // Instantiate with data
@@ -94,6 +94,7 @@ $posts = Post::where('createdAt', '<=', $date)->descending('score')->get();
 $query = Post::query(true)->containedIn('foo', $foos);
 // or call the instance method
 $query->useMasterKey(true)->findOrFail($id);
+// Models created by Query will have the same `useMasterKey` value as the Query.
 ```
 
 ## Relations
