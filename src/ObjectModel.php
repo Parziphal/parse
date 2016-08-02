@@ -200,9 +200,14 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         return $this->parseObject->getObjectId();
     }
 
+    public function save()
+    {
+        $this->parseObject->save($this->useMasterKey);
+    }
+
     public function update(array $data)
     {
-        $this->fill($data)->save($this->useMasterKey);
+        $this->fill($data)->save();
     }
 
     /**
@@ -315,7 +320,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     /**
      * @param string  $key
      *
-     * @return self
+     * @return static
      */
     protected function getRelation($key)
     {
