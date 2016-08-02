@@ -245,7 +245,7 @@ class Query
         if (!$record) {
             $class = $this->fullClassName;
 
-            $record = new $class();
+            $record = new $class(null, $this->useMasterKey);
         }
 
         return $record;
@@ -315,7 +315,7 @@ class Query
 
         $class = $this->fullClassName;
 
-        return new $class($data);
+        return new $class($data, $this->useMasterKey);
     }
 
     /**
@@ -450,7 +450,7 @@ class Query
     {
         $className = $this->fullClassName;
 
-        $model = new $className($data);
+        $model = new $className($data, $this->useMasterKey);
 
         if ($this->includeKeys) {
             // Force model to load into its relations array the eager-loaded
