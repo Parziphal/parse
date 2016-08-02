@@ -16,6 +16,7 @@
     <php>
       <env name="parseAppId"     value="parseAppId"/>
       <env name="parseMasterKey" value="parseMasterKey"/>
-      <env name="parseServerUrl" value="parseServerUrl"/>
+      <env name="parseServerUrl" value="http://127.0.0.1:1337"/>
+      <env name="parseMountPath" value="/parse"/>
     </php>
 </phpunit>

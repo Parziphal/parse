@@ -24,12 +24,12 @@ class ParseServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->setupConfig();
-        
+
         $this->setupParse();
-        
+
         $this->registerCommands();
     }
-   
+
     /**
      * Setup the config.
      *
@@ -47,14 +47,14 @@ class ParseServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom($source, 'parse');
     }
-    
+
     protected function registerCommands()
     {
         $this->registerModelMakeCommand();
-        
+
         $this->commands('command.parse.model.make');
     }
-    
+
     protected function registerModelMakeCommand()
     {
         $this->app->singleton('command.parse.model.make', function ($app) {
@@ -70,19 +70,19 @@ class ParseServiceProvider extends ServiceProvider
     protected function setupParse()
     {
         $config = $this->app->config->get('parse');
-        
+
         ParseClient::setStorage(new SessionStorage());
         ParseClient::initialize($config['app_id'], $config['rest_key'], $config['master_key']);
-        ParseClient::setServerURL($config['server_url']);
-        
+        ParseClient::setServerURL($config['server_url'], $config['mount_path']);
+
         Auth::provider('parse', function($app, array $config) {
             return new UserProvider($config['model']);
         });
-        
+
         Auth::provider('parse-facebook', function($app, array $config) {
             return new FacebookUserProvider($config['model']);
         });
-        
+
         Auth::provider('parse-any', function($app, array $config) {
             return new AnyUserProvider($config['model']);
         });
