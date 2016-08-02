@@ -450,18 +450,7 @@ class Query
     {
         $className = $this->fullClassName;
 
-        $model = new $className($data, $this->useMasterKey);
-
-        if ($this->includeKeys) {
-            // Force model to load into its relations array the eager-loaded
-            // relations. If not, non-loaded relations won't be included when
-            // calling toArray() on the model.
-            foreach ($this->includeKeys as $key) {
-                $model->getRelationValue($key);
-            }
-        }
-
-        return $model;
+        return new $className($data, $this->useMasterKey);
     }
 
     /**
