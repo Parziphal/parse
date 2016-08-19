@@ -12,6 +12,15 @@ This library pretends to make Parse usable in a more Eloquent-like manner. For L
 
 ## Setup
 
+Add the service provider in your `config/app.php` file:
+
+```php
+'providers' => [
+    // etc...
+    Parziphal\Parse\ParseServiceProvider::class,
+],
+```
+
 Publish the configuration file by running:
 
     php artisan vendor:publish
@@ -21,7 +30,8 @@ Set your configuration in `config/parse.php`, or in your `.env` file by setting 
     PARSE_APP_ID     - App ID
     PARSE_REST_KEY   - REST API key
     PARSE_MASTER_KEY - Master key
-    PARSE_SERVER_URL - Server URL
+    PARSE_SERVER_URL - Server URL (e.g. http://127.0.0.1:1337)
+    PARSE_MOUNT_PATH - Server mount path (e.g. /parse)
 
 ## Log in with Parse
 
