@@ -4,9 +4,9 @@ namespace Parziphal\Parse\Test;
 
 use Parse\ParseObject;
 use Parziphal\Parse\ObjectModel;
-use Parziphal\Parse\Test\Models\Foo;
-use Parziphal\Parse\Test\Models\Bar;
-use Parziphal\Parse\Test\Models\Baz;
+use Parziphal\Parse\Test\Models\Post;
+use Parziphal\Parse\Test\Models\User;
+use Parziphal\Parse\Test\Models\Category;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ModelTest extends \PHPUnit_Framework_TestCase
@@ -18,85 +18,90 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             'b'   => true,
             'arr' => [1, 2, 3]
         ];
-        
-        $foo = new Foo($data);
-        
-        $this->assertSame($data['n'], $foo->n);
-        $this->assertNull($foo->id);
-        
-        $foo->save();
-        
-        $this->assertNotNull($foo->id);
-        
-        $stored = Foo::findOrFail($foo->id);
-        
-        $this->assertSame($stored->id, $foo->id);
-        
-        $foo->add('arr', 4);
-        $foo->update(['n' => 2]);
-        
-        $foo = Foo::findOrFail($foo->id);
-        
-        $this->assertSame(2, $foo->n);
-        $this->assertSame(4, count($foo->arr));
-        
-        $foo->destroy();
-        
+
+        $post = new Post($data);
+
+        $this->assertSame($data['n'], $post->n);
+        $this->assertNull($post->id);
+
+        $post->save();
+
+        $this->assertNotNull($post->id);
+
+        $stored = Post::findOrFail($post->id);
+
+        $this->assertSame($stored->id, $post->id);
+
+        $post->add('arr', 4);
+        $post->update(['n' => 2]);
+
+        $post = Post::findOrFail($post->id);
+
+        $this->assertSame(2, $post->n);
+        $this->assertSame(4, count($post->arr));
+
+        $post->destroy();
+
         $destroyed = false;
-        
+
         try {
-            Foo::findOrFail($foo->id);
+            Post::findOrFail($post->id);
         } catch (ModelNotFoundException $e) {
             $destroyed = true;
         }
-        
+
         $this->assertSame(true, $destroyed);
     }
-    
+
+    public function testBelongsToMany()
+    {
+        $laravelCategory = Category::create(['name' => 'Laravel']);
+        $parseCategory   = Category::create(['name' => 'Parse']);
+
+        $post = Post::create(['title' => 'New post']);
+
+        $post->categories()->save([
+            $laravelCategory,
+            $parseCategory
+        ]);
+
+        $post = Post::with('categories')->findOrFail($post->id);
+
+        $this->assertSame(2, $post->categories->count());
+        $this->assertSame($laravelCategory->id, $post->categories->first()->id);
+        $this->assertSame($parseCategory->id, $post->categories[1]->id);
+    }
+
     public function testHasManyArray()
     {
-        // Create Foo
-        $foo = Foo::create(['n' => 2]);
-        
-        // Create Bar
-        $bar = Bar::create(['n' => 1]);
-        
-        // Save $bar to 'bars' relation. This will
-        // relate $bar to $foo.
-        $foo->bars()->save($bar);
-        
-        // Get stored $foo.
-        $stored = Foo::with('bars')->findOrFail($foo->id());
-        
-        // Check bars.
-        $this->assertSame($bar->id, $stored->bars->first()->id);
-        $this->assertSame($bar->foo->id, $stored->id);
-        $this->assertSame(1, $stored->bars->first()->n);
-        $this->assertSame(1, $stored->bars->count());
-        
-        $this->assertSame(2, $stored->bars->first()->foo->fetch()->n);
+        $category = Category::create(['name' => 'Programming']);
+
+        $postA = Post::create(['title' => 'Timeless post']);
+        $postA->categories()->save($category);
+
+        $postB = Post::create(['title' => 'Pressing buttons']);
+        $postB->categories()->save($category);
+
+        $category = Category::with('posts')->findOrFail($category->id);
+
+        $this->assertSame(2, $category->posts->count());
+        $this->assertSame($postA->id, $category->posts[0]->id);
+        $this->assertSame($postB->id, $category->posts[1]->id);
     }
-    
-    public function testHasMany()
+
+    public function testBelongsToAndHasMany()
     {
-        // Create $foo
-        $foo = Foo::create(['n' => 2]);
-        
-        for ($i = 0; $i < 3; $i++) {
-            // Create baz and relate them to $foo
-            $baz = Baz::create([
-                'n' => $i,
-                'foo' => $foo
-            ]);
-        }
-        
-        $this->assertSame(3, $foo->bazs->count());
-        $this->assertSame($baz->id, $foo->bazs->last()->id);
-        
-        $foo = Foo::with('bazs')->findOrFail($foo->id);
-        
-        $this->assertSame(0, $foo->bazs[0]->n);
-        $this->assertSame(1, $foo->bazs[1]->n);
-        $this->assertSame(2, $foo->bazs[2]->n);
+        $user = User::create(['name' => 'admin']);
+
+        $post = Post::create([
+            'user'  => $user,
+            'title' => 'Admin post'
+        ]);
+
+        $post = Post::with('user')->findOrFail($post->id);
+
+        $this->assertSame($user->id, $post->user->id);
+        // User Has many users
+        $this->assertSame($post->id, $user->posts[0]->id);
     }
 }
