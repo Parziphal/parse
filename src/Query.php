@@ -3,9 +3,10 @@
 namespace Parziphal\Parse;
 
 use Closure;
-use ReflectionClass;
+use Traversable;
 use Parse\ParseQuery;
 use Parse\ParseObject;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class Query
@@ -409,6 +410,32 @@ class Query
     public function doesNotMatchKeyInQuery($key, $queryKey, $query)
     {
         $this->parseQuery->doesNotMatchKeyInQuery($key, $queryKey, $this->parseQueryFromQuery($query));
+
+        return $this;
+    }
+
+    /**
+     * This method accepts a single ParseObject, or an array
+     * or a Traversable of ParseObjects.
+     *
+     * @param  string $key
+     * @param  mixed  $objects
+     *
+     * @return $this
+     */
+    public function containedIn($key, $objects)
+    {
+        if (!is_array($objects) && !$objects instanceof Traversable) {
+            $objects = [ $objects ];
+        }
+
+        $parseObjects = [];
+
+        foreach ($objects as $object) {
+            $parseObjects[] = $object->getParseObject();
+        }
+
+        $this->parseQuery->containedIn($key, $parseObjects);
 
         return $this;
     }

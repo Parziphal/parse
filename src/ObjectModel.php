@@ -10,16 +10,26 @@ use JsonSerializable;
 use Parse\ParseObject;
 use Illuminate\Support\Arr;
 use Parse\Internal\Encodable;
+use Illuminate\Support\Pluralizer;
 use Parziphal\Parse\Relations\HasMany;
 use Parziphal\Parse\Relations\Relation;
 use Parziphal\Parse\Relations\BelongsTo;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Arrayable;
 use Parziphal\Parse\Relations\HasManyArray;
+use Parziphal\Parse\Relations\BelongsToMany;
 
 abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 {
     protected static $parseClassName;
+
+    /**
+     * Defines the default value of $useMasterKey througout all class methods,
+     * such as `query`, `create`, `all`, `__construct`, and `__callStatic`.
+     *
+     * @var bool
+     */
+    protected static $defaultUseMasterKey = false;
 
     protected $parseObject;
 
@@ -37,8 +47,12 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         return static::$parseClassName ?: static::shortName();
     }
 
-    public static function create($data, $useMasterKey = false)
+    public static function create($data, $useMasterKey = null)
     {
+        if ($useMasterKey === null) {
+            $useMasterKey = static::$defaultUseMasterKey;
+        }
+
         $model = new static($data, $useMasterKey);
 
         $model->save();
@@ -49,15 +63,24 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     /**
      * Create a new query for this class.
      *
+     * @param  bool  $useMasterKey
      * @return Query
      */
-    public static function query($useMasterKey = false)
+    public static function query($useMasterKey = null)
     {
+        if ($useMasterKey === null) {
+            $useMasterKey = static::$defaultUseMasterKey;
+        }
+
         return new Query(static::parseClassName(), static::class, $useMasterKey);
     }
 
-    public static function all($useMasterKey = false)
+    public static function all($useMasterKey = null)
     {
+        if ($useMasterKey === null) {
+            $useMasterKey = static::$defaultUseMasterKey;
+        }
+
         return static::query($useMasterKey)->get();
     }
 
@@ -68,7 +91,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      */
     public static function __callStatic($method, array $params)
     {
-        $query = static::query();
+        $query = static::query(static::$defaultUseMasterKey);
 
         return call_user_func_array([$query, $method], $params);
     }
@@ -77,7 +100,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      * @param ParseObject|array  $data
      * @param bool               $useMasterKey
      */
-    public function __construct($data = null, $useMasterKey = false)
+    public function __construct($data = null, $useMasterKey = null)
     {
         if ($data instanceof ParseObject) {
             $this->parseObject = $data;
@@ -89,7 +112,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
             }
         }
 
-        $this->useMasterKey = $useMasterKey;
+        $this->useMasterKey = $useMasterKey !== null ? $useMasterKey : static::$defaultUseMasterKey;
     }
 
     public function __get($key)
@@ -342,13 +365,20 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         return $this->parseObject;
     }
 
-    protected function hasManyArray($otherClass, $key = null)
+    /**
+     * This object will have an array with references to many other objects.
+     *
+     * @param  string  $otherClass  The other object's class
+     * @param  string  $key         The key under which the array will be stored
+     * @return BelongsToMany
+     */
+    protected function belongsToMany($otherClass, $key = null)
     {
         if (!$key) {
             $key = $this->getCallerFunctionName();
         }
 
-        return new HasManyArray($otherClass, $key, $this);
+        return new BelongsToMany($otherClass, $key, $this);
     }
 
     protected function belongsTo($otherClass, $key = null)
@@ -367,6 +397,24 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         }
 
         return new HasMany($otherClass::query(), $this, $key);
+    }
+
+    /**
+     * This is the reverse relation of belongsToMany. Children are expected to
+     * store the parents' keys in an array. By default, the $foreignKey is
+     * expected to be the plural of the parent object's name.
+     *
+     * @param  string  $otherClass
+     * @param  string  $foreignKey
+     * @return HasManyArray
+     */
+    protected function hasManyArray($otherClass, $foreignKey = null)
+    {
+        if (!$foreignKey) {
+            $foreignKey = Pluralizer::plural(lcfirst(static::parseClassName()));
+        }
+
+        return new HasManyArray($otherClass::query(), $this, $foreignKey);
     }
 
     protected function getRelationshipFromMethod($method)
