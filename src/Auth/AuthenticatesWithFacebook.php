@@ -11,17 +11,18 @@ use Illuminate\Support\Facades\Auth;
  */
 trait AuthenticatesWithFacebook
 {
-    /**
-     * Registers a new user or log in if the user exists.
-     *
-     * @param \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function logInOrRegisterWithFacebook(Request $request)
-    {
-        $user = $this->logInWithFacebook($request);
+    protected $apiResponse = ['ok' => true];
 
-        Auth::guard($this->getGuard())->login($user);
+    public function logInOrRegisterWithFacebookApi(Request $request)
+    {
+        $this->logInOrRegisterWithFacebook($request);
+
+        return response()->json($this->apiResponse);
+    }
+
+    public function logInOrRegisterWithFacebookRedirect(Request $request)
+    {
+        $this->logInOrRegisterWithFacebook($request);
 
         return redirect($this->redirectPath());
     }
@@ -42,16 +43,42 @@ trait AuthenticatesWithFacebook
     }
 
     /**
-     * Handles a registration using Facebook.
+     * Registers a new user with Facebook, but the user isn't logged in to Laravel.
      *
      * @param \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function registerWithFacebook(Request $request)
+    public function registerWithFacebookRedirect(Request $request)
     {
         $this->logInWithFacebook($request);
 
         return redirect($this->redirectPath());
+    }
+
+    /**
+     * Registers a new user with Facebook, but the user isn't logged in to Laravel.
+     *
+     * @param \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function registerWithFacebookApi(Request $request)
+    {
+        $this->logInWithFacebook($request);
+
+        return response()->json($this->apiResponse);
+    }
+
+    /**
+     * Registers a new user and/or logs the user in to Laravel.
+     *
+     * @param \Illuminate\Http\Request  $request
+     * @return void
+     */
+    protected function logInOrRegisterWithFacebook(Request $request)
+    {
+        $user = $this->logInWithFacebook($request);
+
+        Auth::guard($this->getGuard())->login($user);
     }
 
     /**
