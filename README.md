@@ -56,6 +56,27 @@ There are 3 users providers available:
 
 You can use the `Parziphal\Parse\Auth\AuthenticatesWithFacebook` trait in your auth controller (`App\Http\Controllers\Auth\AuthController` by default). The trait has methods to handle Facebook authentication/registration. Just bind them to a route and you're ready to go.
 
+Note that the trait can respond in two ways: with a redirect, or with JSON. The JSON response can be configured:
+
+```php
+// Interface of Parziphal\Parse\Auth\AuthenticatesWithFacebook
+// The *Api methods respond with $apiResponse.
+trait AuthenticatesWithFacebook
+{
+    protected $apiResponse = ['ok' => true];
+
+    public function logInOrRegisterWithFacebookApi(Request $request);
+
+    public function logInOrRegisterWithFacebookRedirect(Request $request);
+
+    public function registerWithFacebookRedirect(Request $request);
+
+    public function registerWithFacebookApi(Request $request);
+
+    public function registerAny(Request $request);
+}
+```
+
 ## ObjectModels
 
 The `Parziphal\Parse\ObjectModel` class is a wrapper for `Parse\ParseObject`. It behaves as an Eloquent model, so you could do stuff like:
@@ -82,12 +103,6 @@ $post = Post::findOrFail($id);
 
 // Get all records
 $posts = Post::all();
-
-// Using master key
-// Pass as second parameter when instantiating
-$post = new Post($data, true);
-// or set later
-$post->useMasterKey(true)->save();
 ```
 
 ## Queries
@@ -99,17 +114,46 @@ $post->useMasterKey(true)->save();
 // and not like ParseQuery's `get` which finds an object by id.
 $posts = Post::where('createdAt', '<=', $date)->descending('score')->get();
 
-// Using master key, same as with ObjectModel
-// Pass as parameter in ObjectModel::query()
-$query = Post::query(true)->containedIn('foo', $foos);
-// or call the instance method
-$query->useMasterKey(true)->findOrFail($id);
-// Models created by Query will have the same `useMasterKey` value as the Query.
+$posts = Post::where([
+    'creator' => $user,
+    'title' => $title
+  ])
+  ->containedIn('foo', $foos)
+  ->get();
+
+$post = Post::where($data)->firstOrCreate();
+```
+
+## Using Master Key
+
+Objects and queries can be configured to use Master Key with the `$useMasterKey` property. This can be done at class level, at instantiation, or by using the setter method:
+
+```php
+// In objects, pass a second parameter when instantiating:
+$post = new Post($data, true);
+// or use the setter method:
+$post->useMasterKey(true)->save();
+
+// When creating queries, pass as parameter:
+$query = Post::query(true);
+// or use the setter method:
+$query->userMasterKey(true);
+
+// Other object methods that accept a $useMasterKey value are:
+$post  = Post::create($data, true);
+$posts = Post::all(true);
+
+// To configure a model to always use Master Key, define
+// a protected static property `$defaultUseMasterKey`:
+class Post extends ObjectModel
+{
+    protected static $defaultUseMasterKey = true;
+}
 ```
 
 ## Relations
 
-Supported relations are `belonogsTo`, `hasMany` and `hasManyArray` (which stores pointers in an array attribute).
+Supported relations are `belongsTo`, `belongsToMany`, `hasMany`, and `hasManyArray` which is the inverse of `belongsToMany`.
 
 Please check the tests for examples.
 
