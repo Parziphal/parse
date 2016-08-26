@@ -25,9 +25,9 @@ class ParseServiceProvider extends ServiceProvider
     {
         $this->setupConfig();
 
-        $this->setupParse();
-
         $this->registerCommands();
+
+        $this->setupParse();
     }
 
     /**

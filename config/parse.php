@@ -19,14 +19,12 @@ return [
 
     /**
      * Parse Server URL
-     * E.g. 'http://127.0.0.1:1337'
      */
-    'server_url' => env('PARSE_SERVER_URL'),
+    'server_url' => env('PARSE_SERVER_URL', 'http://127.0.0.1:1337'),
 
     /**
      * Parse Server Mount Path
-     * E.g. '/parse'
      */
-    'mount_path' => env('PARSE_MOUNT_PATH'),
+    'mount_path' => env('PARSE_MOUNT_PATH', '/parse'),
 
 ];
