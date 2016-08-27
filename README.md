@@ -1,6 +1,6 @@
 # Laravel Parse
 
-This library pretends to make Parse usable in a more Eloquent-like manner. For Laravel 5.2.
+This library pretends to make Parse usable in a Eloquent-like manner. For Laravel 5.2+.
 
 ## Features
 
