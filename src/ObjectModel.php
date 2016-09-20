@@ -85,6 +85,17 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * Set the default value for defaultUseMasterKey. This is intended to be used
+     * as a global configuration, hence the value is set to "self" and not to "static".
+     *
+     * @param bool $value
+     */
+    public static function setDefaultUseMasterKey($value)
+    {
+        self::$defaultUseMasterKey = (bool)$value;
+    }
+
+    /**
      * Static calls are passed to a new query.
      *
      * @return mixed
@@ -300,8 +311,16 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         $array = $object->getAllKeys();
 
         $array['objectId']  = $object->getObjectId();
-        $array['createdAt'] = $this->dateToString($object->getCreatedAt());
-        $array['updatedAt'] = $this->dateToString($object->getUpdatedAt());
+
+        $createdAt = $object->getCreatedAt();
+        if ($createdAt) {
+            $array['createdAt'] = $this->dateToString($createdAt);
+        }
+
+        $updatedAt = $object->getUpdatedAt();
+        if ($updatedAt) {
+            $array['updatedAt'] = $this->dateToString($updatedAt);
+        }
 
         if ($object->getACL()) {
             $array['ACL'] = $object->getACL()->_encode();
