@@ -40,7 +40,7 @@ class ParseServiceProvider extends ServiceProvider
         $source = realpath(__DIR__ . '/../config/parse.php');
 
         if ($this->app instanceof LaravelApplication && $this->app->runningInConsole()) {
-            $this->publishes([$source => config_path('parse.php')]);
+            $this->publishes([$source => config_path('parse.php')], 'parse');
         } elseif ($this->app instanceof LumenApplication) {
             $this->app->configure('parse');
         }
