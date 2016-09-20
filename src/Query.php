@@ -11,13 +11,14 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class Query
 {
-    protected static $operators = [
+    const OPERATORS = [
         '='  => 'equalTo',
         '!=' => 'notEqualTo',
         '>'  => 'greaterThan',
         '>=' => 'greaterThanOrEqualTo',
         '<'  => 'lessThan',
         '<=' => 'lessThanOrEqualTo',
+        'in' => 'containedIn',
     ];
 
     /**
@@ -187,11 +188,11 @@ class Query
 
             $this->parseQuery->equalTo($key, $operator);
         } else {
-            if (!array_key_exists($operator, self::$operators)) {
+            if (!array_key_exists($operator, self::OPERATORS)) {
                 throw new Exception("Invalid operator: " . $operator);
             }
 
-            call_user_func([$this->parseQuery, self::$operators[$operator]], $key, $value);
+            call_user_func([$this, self::OPERATORS[$operator]], $key, $value);
         }
 
         return $this;
@@ -414,28 +415,52 @@ class Query
         return $this;
     }
 
+    public function orderBy($key, $order = 1)
+    {
+        if ($order == 1) {
+            $this->ascending($key);
+        } else {
+            $this->descending($key);
+        }
+
+        return $this;
+    }
+
     /**
-     * This method accepts a single ParseObject, or an array
-     * or a Traversable of ParseObjects.
+     * Alias for containedIn.
      *
      * @param  string $key
-     * @param  mixed  $objects
+     * @param  mixed  $values
      *
      * @return $this
      */
-    public function containedIn($key, $objects)
+    public function whereIn($key, $values)
     {
-        if (!is_array($objects) && !$objects instanceof Traversable) {
-            $objects = [ $objects ];
+        return $this->containedIn($key, $values);
+    }
+
+    /**
+     * ObjectModels are replaced for their ParseObjects. It also accepts any kind
+     * of traversable variable.
+     *
+     * @param  string $key
+     * @param  mixed  $values
+     *
+     * @return $this
+     */
+    public function containedIn($key, $values)
+    {
+        if (!is_array($values) && !$values instanceof Traversable) {
+            $values = [ $values ];
         }
 
-        $parseObjects = [];
-
-        foreach ($objects as $object) {
-            $parseObjects[] = $object->getParseObject();
+        foreach ($values as $k => $value) {
+            if ($value instanceof ObjectModel) {
+                $values[$k] = $value->getParseObject();
+            }
         }
 
-        $this->parseQuery->containedIn($key, $parseObjects);
+        $this->parseQuery->containedIn($key, $values);
 
         return $this;
     }
