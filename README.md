@@ -23,15 +23,15 @@ Add the service provider in your `config/app.php` file:
 
 Publish the configuration file by running:
 
-    php artisan vendor:publish
+    php artisan vendor:publish --tag parse
 
 Set your configuration in `config/parse.php`, or in your `.env` file by setting the following envs:
 
-    PARSE_APP_ID     - App ID
-    PARSE_REST_KEY   - REST API key
-    PARSE_MASTER_KEY - Master key
-    PARSE_SERVER_URL - Server URL (e.g. http://127.0.0.1:1337)
-    PARSE_MOUNT_PATH - Server mount path (e.g. /parse)
+    PARSE_APP_ID=App_ID
+    PARSE_REST_KEY=REST_API_key
+    PARSE_MASTER_KEY=Master_key
+    PARSE_SERVER_URL=http://127.0.0.1:1337
+    PARSE_MOUNT_PATH=/parse
 
 ## Log in with Parse
 
