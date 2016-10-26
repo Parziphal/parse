@@ -328,7 +328,13 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 
         foreach ($array as $key => $value) {
             if ($value instanceof ParseObject) {
-                if ($value->isDataAvailable()) {
+                if (
+                    $value->getClassName() == $this->parseObject->getClassName() &&
+                    $value->getObjectId() == $this->parseObject->getObjectId()
+                ) {
+                    // If a key points to this parent object, we will skip it to avoid
+                    // infinite recursion.
+                } elseif ($value->isDataAvailable()) {
                     $array[$key] = $this->parseObjectToArray($value);
                 }
             } elseif ($value instanceof ParseFile) {
