@@ -155,7 +155,9 @@ class Post extends ObjectModel
 
 Supported relations are `belongsTo`, `belongsToMany`, `hasMany`, and `hasManyArray` which is the inverse of `belongsToMany`.
 
-Please check the tests for examples.
+The query method `with` is just a wraper for ParseQuery's `includeKey`, therefore external relations (i.e. `hasMany` and `hasManyArray`) won't be eager-loaded this way, they have to be manually loaded.
+
+Please check the tests for examples regarding relations.
 
 ## Inspiration from
 
