@@ -5,6 +5,7 @@ namespace Parziphal\Parse;
 use DateTime;
 use Traversable;
 use LogicException;
+use Parse\ParseACL;
 use Parse\ParseFile;
 use JsonSerializable;
 use Parse\ParseObject;
@@ -169,6 +170,13 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         return $this;
     }
 
+    /**
+     * ParseACL can be set by passing "acl" as key. This is useful specially in
+     * mass assigments, e.g. ACL can be set alongside attributes with create().
+     *
+     * @param string $key
+     * @param mixed $value
+     */
     public function set($key, $value)
     {
         if (is_array($value)) {
@@ -179,6 +187,8 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
             }
         } elseif ($value instanceof ObjectModel) {
             $this->parseObject->set($key, $value->parseObject);
+        } elseif ($key == 'acl') {
+            $this->parseObject->setACL($value);
         } else {
             $this->parseObject->set($key, $value);
         }
@@ -237,6 +247,24 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function save()
     {
         $this->parseObject->save($this->useMasterKey);
+    }
+
+    /**
+     * This will delete the object from the database. To delete a key,
+     * use removeKey().
+     *
+     * @return void
+     */
+    public function delete()
+    {
+        $this->parseObject->destroy($this->useMasterKey);
+    }
+
+    public function removeKey($key)
+    {
+        $this->parseObject->delete($key);
+
+        return $this;
     }
 
     public function update(array $data)
