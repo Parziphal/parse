@@ -23,15 +23,15 @@ Add the service provider in your `config/app.php` file:
 
 Publish the configuration file by running:
 
-    php artisan vendor:publish --tag parse
+    php artisan vendor:publish
 
 Set your configuration in `config/parse.php`, or in your `.env` file by setting the following envs:
 
-    PARSE_APP_ID=App_ID
-    PARSE_REST_KEY=REST_API_key
-    PARSE_MASTER_KEY=Master_key
-    PARSE_SERVER_URL=http://127.0.0.1:1337
-    PARSE_MOUNT_PATH=/parse
+    PARSE_APP_ID     - App ID
+    PARSE_REST_KEY   - REST API key
+    PARSE_MASTER_KEY - Master key
+    PARSE_SERVER_URL - Server URL (e.g. http://127.0.0.1:1337)
+    PARSE_MOUNT_PATH - Server mount path (e.g. /parse)
 
 ## Log in with Parse
 
@@ -86,7 +86,7 @@ The `Parziphal\Parse\ObjectModel` class is a wrapper for `Parse\ParseObject`. It
 $post = new Post(['title' => 'Some Title']);
 
 // Create
-$post = Post::create(['title' => 'Some Title']);
+$post = Post::create(['title' => 'Some Title', 'acl' => $acl]);
 
 // Get objectId
 echo $post->id;   // EWFppWR4qf
@@ -103,6 +103,11 @@ $post = Post::findOrFail($id);
 
 // Get all records
 $posts = Post::all();
+
+// Delete is like Eloquent's delete: it will delete the object.
+$post->delete();
+// To remove a key (ParseObject's `delete`), use `removeKey`
+$post->removeKey($someKey);
 ```
 
 ## Queries
@@ -155,9 +160,7 @@ class Post extends ObjectModel
 
 Supported relations are `belongsTo`, `belongsToMany`, `hasMany`, and `hasManyArray` which is the inverse of `belongsToMany`.
 
-The query method `with` is just a wraper for ParseQuery's `includeKey`, therefore external relations (i.e. `hasMany` and `hasManyArray`) won't be eager-loaded this way, they have to be manually loaded.
-
-Please check the tests for examples regarding relations.
+Please check the tests for examples.
 
 ## Inspiration from
 
