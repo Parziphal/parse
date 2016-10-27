@@ -273,6 +273,30 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * This won't save changes automatically.
+     *
+     * @param  string  $key
+     * @param  integer $amount
+     * @return $this
+     */
+    public function increment($key, $amount = 1)
+    {
+        $this->parseObject->increment($key, $amount);
+
+        return $this;
+    }
+
+    /**
+     * @param  string  $key
+     * @param  integer $amount
+     * @return $this
+     */
+    public function decrement($key, $amount = 1)
+    {
+        return $this->increment($key, $amount * -1);
+    }
+
+    /**
      * @return $this
      */
     public function fill(array $data)
