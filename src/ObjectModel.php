@@ -300,7 +300,27 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 
     public function toArray()
     {
-        return $this->parseObjectToArray($this->parseObject);
+        $array = $this->parseObjectToArray($this->parseObject);
+
+        $relations = array_diff_key($this->relations, $array);
+
+        if ($relations) {
+          foreach ($this->relations as $name => $relation) {
+              if ($relation instanceof Collection) {
+                  $coll = [];
+
+                  foreach ($relation as $object) {
+                      $coll[] = $object->toArray();
+                  }
+
+                  $array[$name] = $coll;
+              } else {
+                  $array[$name] = $relation->toArray();
+              }
+          }
+        }
+
+        return $array;
     }
 
     /**
@@ -309,7 +329,6 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function parseObjectToArray(ParseObject $object)
     {
         $array = $object->getAllKeys();
-
         $array['objectId']  = $object->getObjectId();
 
         $createdAt = $object->getCreatedAt();
