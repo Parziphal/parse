@@ -199,6 +199,26 @@ class Query
     }
 
     /**
+     * Alias for containedIn.
+     *
+     * @param  string $key
+     * @param  mixed  $values
+     *
+     * @return $this
+     */
+    public function whereIn($key, $values)
+    {
+        return $this->containedIn($key, $values);
+    }
+
+    public function whereNotExists($key)
+    {
+        $this->parseQuery->doesNotExist($key);
+
+        return $this;
+    }
+
+    /**
      * Find a record by Object ID.
      *
      * @param string $objectId
@@ -424,19 +444,6 @@ class Query
         }
 
         return $this;
-    }
-
-    /**
-     * Alias for containedIn.
-     *
-     * @param  string $key
-     * @param  mixed  $values
-     *
-     * @return $this
-     */
-    public function whereIn($key, $values)
-    {
-        return $this->containedIn($key, $values);
     }
 
     /**
