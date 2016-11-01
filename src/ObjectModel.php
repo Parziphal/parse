@@ -6,6 +6,7 @@ use DateTime;
 use Traversable;
 use LogicException;
 use Parse\ParseACL;
+use ReflectionClass;
 use Parse\ParseFile;
 use JsonSerializable;
 use Parse\ParseObject;
@@ -23,6 +24,11 @@ use Parziphal\Parse\Relations\BelongsToMany;
 abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 {
     protected static $parseClassName;
+
+    /**
+     * @var \ReflectionProperty
+     */
+    protected static $hasBeenFetchedProp;
 
     /**
      * Defines the default value of $useMasterKey througout all class methods,
@@ -348,6 +354,25 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         $this->parseObject->addUnique($key, $value);
 
         return $this;
+    }
+
+    public function fetch($force = false)
+    {
+        if (!$this->hasBeenFetched() || $force) {
+            $this->parseObject->fetch();
+        }
+
+        return $this;
+    }
+
+    public function hasBeenFetched()
+    {
+        if (!self::$hasBeenFetchedProp) {
+            self::$hasBeenFetchedProp  = (new ReflectionClass(ParseObject::class))->getProperty('hasBeenFetched');
+            self::$hasBeenFetchedProp->setAccessible(true);
+        }
+
+        return self::$hasBeenFetchedProp->getValue($this->parseObject);
     }
 
     public function toArray()
