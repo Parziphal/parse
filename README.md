@@ -6,7 +6,7 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 
 * Initialize Parse automatically.
 * Use facade classes that wraps Parse's classes, exposing an Eloquent-like interface.
-* Enabled to work with Parse's relations (for now supporting "belongs to", "has many" and "has many in array").
+* Enabled to work with Parse's relations.
 * User authentication using username/password combinations and/or with Facebook.
 * Command to create ObjectModels (`parse:model Foo`).
 
@@ -95,7 +95,7 @@ echo $post->id(); // EWFppWR4qf
 // Update
 $post->title = "New Title";
 $post->save();
-
+// or
 $post->update(['foo' => true]);
 
 // Find or fail
@@ -104,10 +104,13 @@ $post = Post::findOrFail($id);
 // Get all records
 $posts = Post::all();
 
-// Delete is like Eloquent's delete: it will delete the object.
+// Delete is like Eloquent's delete: it will delete the object
 $post->delete();
-// To remove a key (ParseObject's `delete`), use `removeKey`
+// To remove a key (ParseObject's `delete` method), use `removeKey`
 $post->removeKey($someKey);
+
+// Create a pointer object
+$pointer = Post::pointer($postId);
 ```
 
 ## Queries
@@ -154,11 +157,14 @@ class Post extends ObjectModel
 {
     protected static $defaultUseMasterKey = true;
 }
+
+// Or use this to make all models use master key by default
+ObjectModel::setDefaultUseMasterKey(true);
 ```
 
 ## Relations
 
-Supported relations are `belongsTo`, `belongsToMany`, `hasMany`, and `hasManyArray` which is the inverse of `belongsToMany`.
+Supported relations are `belongsTo`, `belongsToMany`, `hasMany`, and `hasManyArray` (which is the complement of `belongsToMany`).
 
 Please check the tests for examples.
 
