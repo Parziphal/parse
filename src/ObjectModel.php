@@ -67,6 +67,13 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         return $model;
     }
 
+    public static function pointer($id)
+    {
+        $pointer = new ParseObject(static::parseClassName(), $id, true);
+
+        return new static($pointer);
+    }
+
     /**
      * Create a new query for this class.
      *
