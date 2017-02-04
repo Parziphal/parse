@@ -14,6 +14,7 @@ class UserModel extends ObjectModel
      */
     protected static $parseUserStaticMethods = [
         'logIn',
+        'logOut',
         'logInWithFacebook',
         'loginWithAnonymous',
         'become',
