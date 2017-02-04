@@ -13,6 +13,7 @@ use Laravel\Lumen\Application as LumenApplication;
 use Parziphal\Parse\Auth\Providers\AnyUserProvider;
 use Parziphal\Parse\Auth\Providers\FacebookUserProvider;
 use Illuminate\Foundation\Application as LaravelApplication;
+use Parziphal\Parse\Validation\ParsePresenceVerifier;
 
 class ParseServiceProvider extends ServiceProvider
 {
@@ -85,6 +86,10 @@ class ParseServiceProvider extends ServiceProvider
 
         Auth::provider('parse-any', function($app, array $config) {
             return new AnyUserProvider($config['model']);
+        });
+
+        $this->app->extend('validation.presence', function () {
+            return new ParsePresenceVerifier();
         });
     }
 
