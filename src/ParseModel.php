@@ -3,26 +3,44 @@
 namespace Parziphal\Parse;
 
 use DateTime;
-use Traversable;
-use LogicException;
-use Parse\ParseACL;
-use ReflectionClass;
-use Parse\ParseFile;
-use JsonSerializable;
-use Parse\ParseObject;
-use Illuminate\Support\Arr;
-use Parse\Internal\Encodable;
-use Illuminate\Support\Pluralizer;
-use Parziphal\Parse\Relations\HasMany;
-use Parziphal\Parse\Relations\Relation;
-use Parziphal\Parse\Relations\BelongsTo;
-use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\Support\Arrayable;
-use Parziphal\Parse\Relations\HasManyArray;
+use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Pluralizer;
+use JsonSerializable;
+use LogicException;
+use Parse\ParseFile;
+use Parse\ParseObject;
+use Parziphal\Parse\Relations\BelongsTo;
 use Parziphal\Parse\Relations\BelongsToMany;
+use Parziphal\Parse\Relations\HasMany;
+use Parziphal\Parse\Relations\HasManyArray;
+use Parziphal\Parse\Relations\Relation;
+use ReflectionClass;
 
-abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
+abstract class ParseModel implements Arrayable, Jsonable, JsonSerializable
 {
+    /**
+     * The name of the "created at" column.
+     *
+     * @var string
+     */
+    const CREATED_AT = 'createdAt';
+
+    /**
+     * The name of the "updated at" column.
+     *
+     * @var string
+     */
+    const UPDATED_AT = 'updatedAt';
+
+    /**
+     * The name of the "deleted at" column.
+     *
+     * @var string
+     */
+    const DELETED_AT = 'deletedAt';
+
     protected static $parseClassName;
 
     /**
@@ -44,14 +62,33 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 
     protected $useMasterKey;
 
+    /**
+     * @param ParseObject|array $data
+     * @param bool $useMasterKey
+     */
+    public function __construct($data = null, $useMasterKey = null)
+    {
+        if ($data instanceof ParseObject) {
+            $this->parseObject = $data;
+        } else {
+            $this->parseObject = new ParseObject(static::parseClassName ());
+
+            if (is_array ($data)) {
+                $this->fill ($data);
+            }
+        }
+
+        $this->useMasterKey = $useMasterKey !== null ? $useMasterKey : static::$defaultUseMasterKey;
+    }
+
     public static function shortName()
     {
-        return substr(static::class, strrpos(static::class, '\\') + 1);
+        return substr (static::class, strrpos (static::class, '\\') + 1);
     }
 
     public static function parseClassName()
     {
-        return static::$parseClassName ?: static::shortName();
+        return static::$parseClassName ?: static::shortName ();
     }
 
     public static function create($data, $useMasterKey = null)
@@ -62,14 +99,14 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 
         $model = new static($data, $useMasterKey);
 
-        $model->save();
+        $model->save ();
 
         return $model;
     }
 
     public static function pointer($id)
     {
-        $pointer = new ParseObject(static::parseClassName(), $id, true);
+        $pointer = new ParseObject(static::parseClassName (), $id, true);
 
         return new static($pointer);
     }
@@ -77,7 +114,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     /**
      * Create a new query for this class.
      *
-     * @param  bool  $useMasterKey
+     * @param  bool $useMasterKey
      * @return Query
      */
     public static function query($useMasterKey = null)
@@ -86,7 +123,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
             $useMasterKey = static::$defaultUseMasterKey;
         }
 
-        return new Query(static::parseClassName(), static::class, $useMasterKey);
+        return new Query(static::parseClassName (), static::class, $useMasterKey);
     }
 
     public static function all($useMasterKey = null)
@@ -95,7 +132,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
             $useMasterKey = static::$defaultUseMasterKey;
         }
 
-        return static::query($useMasterKey)->get();
+        return static::query ($useMasterKey)->get ();
     }
 
     /**
@@ -116,43 +153,24 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      */
     public static function __callStatic($method, array $params)
     {
-        $query = static::query(static::$defaultUseMasterKey);
+        $query = static::query (static::$defaultUseMasterKey);
 
-        return call_user_func_array([$query, $method], $params);
-    }
-
-    /**
-     * @param ParseObject|array  $data
-     * @param bool               $useMasterKey
-     */
-    public function __construct($data = null, $useMasterKey = null)
-    {
-        if ($data instanceof ParseObject) {
-            $this->parseObject = $data;
-        } else {
-            $this->parseObject = new ParseObject(static::parseClassName());
-
-            if (is_array($data)) {
-                $this->fill($data);
-            }
-        }
-
-        $this->useMasterKey = $useMasterKey !== null ? $useMasterKey : static::$defaultUseMasterKey;
+        return call_user_func_array ([$query, $method], $params);
     }
 
     public function __get($key)
     {
-        return $this->get($key);
+        return $this->get ($key);
     }
 
     public function __set($key, $value)
     {
-        return $this->set($key, $value);
+        return $this->set ($key, $value);
     }
 
     public function __isset($key)
     {
-        return $this->parseObject->has($key);
+        return $this->parseObject->has ($key);
     }
 
     /**
@@ -162,7 +180,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      */
     public function __call($method, array $params)
     {
-        $ret = call_user_func_array([$this->parseObject, $method], $params);
+        $ret = call_user_func_array ([$this->parseObject, $method], $params);
 
         if ($ret === $this->parseObject) {
             return $this;
@@ -192,18 +210,18 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      */
     public function set($key, $value)
     {
-        if (is_array($value)) {
-            if (Arr::isAssoc($value)) {
-                $this->parseObject->setAssociativeArray($key, $value);
+        if (is_array ($value)) {
+            if (Arr::isAssoc ($value)) {
+                $this->parseObject->setAssociativeArray ($key, $value);
             } else {
-                $this->parseObject->setArray($key, $value);
+                $this->parseObject->setArray ($key, $value);
             }
-        } elseif ($value instanceof ObjectModel) {
-            $this->parseObject->set($key, $value->parseObject);
+        } elseif ($value instanceof ParseModel) {
+            $this->parseObject->set ($key, $value->parseObject);
         } elseif ($key == 'acl') {
-            $this->parseObject->setACL($value);
+            $this->parseObject->setACL ($value);
         } else {
-            $this->parseObject->set($key, $value);
+            $this->parseObject->set ($key, $value);
         }
 
         return $this;
@@ -212,32 +230,32 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function get($key)
     {
         if ($key == 'id') {
-            return $this->id();
+            return $this->id ();
         }
 
-        if ($this->isRelation($key)) {
-            return $this->getRelationValue($key);
+        if ($this->isRelation ($key)) {
+            return $this->getRelationValue ($key);
         }
 
-        $value = $this->parseObject->get($key);
+        $value = $this->parseObject->get ($key);
 
         return $value;
     }
 
     public function getRelationValue($key)
     {
-        if ($this->relationLoaded($key)) {
+        if ($this->relationLoaded ($key)) {
             return $this->relations[$key];
         }
 
-        if ($this->isRelation($key)) {
-            return $this->getRelationshipFromMethod($key);
+        if ($this->isRelation ($key)) {
+            return $this->getRelationshipFromMethod ($key);
         }
     }
 
     public function relationLoaded($key)
     {
-        return array_key_exists($key, $this->relations);
+        return array_key_exists ($key, $this->relations);
     }
 
     public function setRelation($relation, $value)
@@ -249,17 +267,17 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 
     public function isRelation($name)
     {
-        return method_exists($this, $name);
+        return method_exists ($this, $name);
     }
 
     public function id()
     {
-        return $this->parseObject->getObjectId();
+        return $this->parseObject->getObjectId ();
     }
 
     public function save()
     {
-        $this->parseObject->save($this->useMasterKey);
+        $this->parseObject->save ($this->useMasterKey);
     }
 
     /**
@@ -270,43 +288,43 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      */
     public function delete()
     {
-        $this->parseObject->destroy($this->useMasterKey);
+        $this->parseObject->destroy ($this->useMasterKey);
     }
 
     public function removeKey($key)
     {
-        $this->parseObject->delete($key);
+        $this->parseObject->delete ($key);
 
         return $this;
     }
 
     public function update(array $data)
     {
-        $this->fill($data)->save();
+        $this->fill ($data)->save ();
     }
 
     /**
      * This won't save changes automatically.
      *
-     * @param  string  $key
+     * @param  string $key
      * @param  integer $amount
      * @return $this
      */
     public function increment($key, $amount = 1)
     {
-        $this->parseObject->increment($key, $amount);
+        $this->parseObject->increment ($key, $amount);
 
         return $this;
     }
 
     /**
-     * @param  string  $key
+     * @param  string $key
      * @param  integer $amount
      * @return $this
      */
     public function decrement($key, $amount = 1)
     {
-        return $this->increment($key, $amount * -1);
+        return $this->increment ($key, $amount * -1);
     }
 
     /**
@@ -315,7 +333,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function fill(array $data)
     {
         foreach ($data as $key => $value) {
-            $this->set($key, $value);
+            $this->set ($key, $value);
         }
 
         return $this;
@@ -326,18 +344,18 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      * must be an array. This allows to pass
      * non-array values.
      *
-     * @param string  $key
-     * @param mixed   $value
+     * @param string $key
+     * @param mixed $value
      *
      * @return $this
      */
     public function add($key, $value)
     {
-        if (!is_array($value)) {
-            $value = [ $value ];
+        if (!is_array ($value)) {
+            $value = [$value];
         }
 
-        $this->parseObject->add($key, $value);
+        $this->parseObject->add ($key, $value);
 
         return $this;
     }
@@ -347,26 +365,26 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      * must be an array. This allows to pass
      * non-array values.
      *
-     * @param string  $key
-     * @param mixed   $value
+     * @param string $key
+     * @param mixed $value
      *
      * @return $this
      */
     public function addUnique($key, $value)
     {
-        if (!is_array($value)) {
-            $value = [ $value ];
+        if (!is_array ($value)) {
+            $value = [$value];
         }
 
-        $this->parseObject->addUnique($key, $value);
+        $this->parseObject->addUnique ($key, $value);
 
         return $this;
     }
 
     public function fetch($force = false)
     {
-        if (!$this->hasBeenFetched() || $force) {
-            $this->parseObject->fetch();
+        if (!$this->hasBeenFetched () || $force) {
+            $this->parseObject->fetch ();
         }
 
         return $this;
@@ -375,33 +393,33 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function hasBeenFetched()
     {
         if (!self::$hasBeenFetchedProp) {
-            self::$hasBeenFetchedProp  = (new ReflectionClass(ParseObject::class))->getProperty('hasBeenFetched');
-            self::$hasBeenFetchedProp->setAccessible(true);
+            self::$hasBeenFetchedProp = (new ReflectionClass(ParseObject::class))->getProperty ('hasBeenFetched');
+            self::$hasBeenFetchedProp->setAccessible (true);
         }
 
-        return self::$hasBeenFetchedProp->getValue($this->parseObject);
+        return self::$hasBeenFetchedProp->getValue ($this->parseObject);
     }
 
     public function toArray()
     {
-        $array = $this->parseObjectToArray($this->parseObject);
+        $array = $this->parseObjectToArray ($this->parseObject);
 
-        $relations = array_diff_key($this->relations, $array);
+        $relations = array_diff_key ($this->relations, $array);
 
         if ($relations) {
-          foreach ($this->relations as $name => $relation) {
-              if ($relation instanceof Collection) {
-                  $coll = [];
+            foreach ($this->relations as $name => $relation) {
+                if ($relation instanceof Collection) {
+                    $coll = [];
 
-                  foreach ($relation as $object) {
-                      $coll[] = $object->toArray();
-                  }
+                    foreach ($relation as $object) {
+                        $coll[] = $object->toArray ();
+                    }
 
-                  $array[$name] = $coll;
-              } else {
-                  $array[$name] = $relation->toArray();
-              }
-          }
+                    $array[$name] = $coll;
+                } else {
+                    $array[$name] = $relation->toArray ();
+                }
+            }
         }
 
         return $array;
@@ -412,36 +430,36 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      */
     public function parseObjectToArray(ParseObject $object)
     {
-        $array = $object->getAllKeys();
-        $array['objectId']  = $object->getObjectId();
+        $array = $object->getAllKeys ();
+        $array['objectId'] = $object->getObjectId ();
 
-        $createdAt = $object->getCreatedAt();
+        $createdAt = $object->getCreatedAt ();
         if ($createdAt) {
-            $array['createdAt'] = $this->dateToString($createdAt);
+            $array['createdAt'] = $this->dateToString ($createdAt);
         }
 
-        $updatedAt = $object->getUpdatedAt();
+        $updatedAt = $object->getUpdatedAt ();
         if ($updatedAt) {
-            $array['updatedAt'] = $this->dateToString($updatedAt);
+            $array['updatedAt'] = $this->dateToString ($updatedAt);
         }
 
-        if ($object->getACL()) {
-            $array['ACL'] = $object->getACL()->_encode();
+        if ($object->getACL ()) {
+            $array['ACL'] = $object->getACL ()->_encode ();
         }
 
         foreach ($array as $key => $value) {
             if ($value instanceof ParseObject) {
                 if (
-                    $value->getClassName() == $this->parseObject->getClassName() &&
-                    $value->getObjectId() == $this->parseObject->getObjectId()
+                    $value->getClassName () == $this->parseObject->getClassName () &&
+                    $value->getObjectId () == $this->parseObject->getObjectId ()
                 ) {
                     // If a key points to this parent object, we will skip it to avoid
                     // infinite recursion.
-                } elseif ($value->isDataAvailable()) {
-                    $array[$key] = $this->parseObjectToArray($value);
+                } elseif ($value->isDataAvailable ()) {
+                    $array[$key] = $this->parseObjectToArray ($value);
                 }
             } elseif ($value instanceof ParseFile) {
-                $array[$key] = $value->_encode();
+                $array[$key] = $value->_encode ();
             }
         }
 
@@ -450,12 +468,12 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 
     public function toJson($options = 0)
     {
-        return json_encode($this->jsonSerialize(), $options);
+        return json_encode ($this->jsonSerialize (), $options);
     }
 
     public function jsonSerialize()
     {
-        return $this->toArray();
+        return $this->toArray ();
     }
 
     /**
@@ -465,11 +483,11 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      */
     protected function dateToString(DateTime $date)
     {
-        return $date->format('Y-m-d\TH:i:s.' . substr($date->format('u'), 0, 3) . '\Z');
+        return $date->format ('Y-m-d\TH:i:s.' . substr ($date->format ('u'), 0, 3) . '\Z');
     }
 
     /**
-     * @param string  $key
+     * @param string $key
      *
      * @return static
      */
@@ -496,14 +514,14 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     /**
      * This object will have an array with references to many other objects.
      *
-     * @param  string  $otherClass  The other object's class
-     * @param  string  $key         The key under which the array will be stored
+     * @param  string $otherClass The other object's class
+     * @param  string $key The key under which the array will be stored
      * @return BelongsToMany
      */
     protected function belongsToMany($otherClass, $key = null)
     {
         if (!$key) {
-            $key = $this->getCallerFunctionName();
+            $key = $this->getCallerFunctionName ();
         }
 
         return new BelongsToMany($otherClass, $key, $this);
@@ -512,7 +530,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     protected function belongsTo($otherClass, $key = null)
     {
         if (!$key) {
-            $key = $this->getCallerFunctionName();
+            $key = $this->getCallerFunctionName ();
         }
 
         return new BelongsTo($otherClass, $key, $this);
@@ -521,10 +539,10 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     protected function hasMany($otherClass, $key = null)
     {
         if (!$key) {
-            $key = lcfirst(static::parseClassName());
+            $key = lcfirst (static::parseClassName ());
         }
 
-        return new HasMany($otherClass::query(), $this, $key);
+        return new HasMany($otherClass::query (), $this, $key);
     }
 
     /**
@@ -532,17 +550,17 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
      * store the parents' keys in an array. By default, the $foreignKey is
      * expected to be the plural of the parent object's name.
      *
-     * @param  string  $otherClass
-     * @param  string  $foreignKey
+     * @param  string $otherClass
+     * @param  string $foreignKey
      * @return HasManyArray
      */
     protected function hasManyArray($otherClass, $foreignKey = null)
     {
         if (!$foreignKey) {
-            $foreignKey = Pluralizer::plural(lcfirst(static::parseClassName()));
+            $foreignKey = Pluralizer::plural (lcfirst (static::parseClassName ()));
         }
 
-        return new HasManyArray($otherClass::query(), $this, $foreignKey);
+        return new HasManyArray($otherClass::query (), $this, $foreignKey);
     }
 
     protected function getRelationshipFromMethod($method)
@@ -551,18 +569,18 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
 
         if (!$relations instanceof Relation) {
             throw new LogicException('Relationship method must return an object of type '
-                .'Parziphal\Parse\Relations\Relation');
+                . 'Parziphal\Parse\Relations\Relation');
         }
 
-        $results = $relations->getResults();
+        $results = $relations->getResults ();
 
-        $this->setRelation($method, $results);
+        $this->setRelation ($method, $results);
 
         return $results;
     }
 
     protected function getCallerFunctionName()
     {
-        return debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2]['function'];
+        return debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2]['function'];
     }
 }

@@ -3,20 +3,22 @@
 namespace Parziphal\Parse;
 
 use Closure;
-use Traversable;
-use Parse\ParseQuery;
-use Parse\ParseObject;
-use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Parse\ParseObject;
+use Parse\ParseQuery;
+use Traversable;
 
 class Query
 {
     const OPERATORS = [
-        '='  => 'equalTo',
+        '=' => 'equalTo',
         '!=' => 'notEqualTo',
-        '>'  => 'greaterThan',
+        '>' => 'greaterThan',
         '>=' => 'greaterThanOrEqualTo',
-        '<'  => 'lessThan',
+        '<' => 'lessThan',
         '<=' => 'lessThanOrEqualTo',
         'in' => 'containedIn',
     ];
@@ -46,6 +48,14 @@ class Query
      */
     protected $useMasterKey;
 
+    public function __construct($parseClassName, $fullClassName, $useMasterKey = false)
+    {
+        $this->parseClassName = $parseClassName;
+        $this->parseQuery = new ParseQuery($parseClassName);
+        $this->fullClassName = $fullClassName;
+        $this->useMasterKey = $useMasterKey;
+    }
+
     /**
      * Pass Query, ParseQuery or Closure, as params or in an
      * array. If Closure is passed, a new Query will be passed
@@ -64,13 +74,14 @@ class Query
      */
     public static function orQueries()
     {
-        $queries = func_get_args();
+        $queries = func_get_args ();
 
-        if (is_array($queries[0])) {
+        if (is_array ($queries[0])) {
             $queries = $queries[0];
         }
 
         $q = $queries[0];
+
         $parseQueries = [];
 
         foreach ($queries as $query) {
@@ -80,11 +91,8 @@ class Query
                 $query = new static($q->parseClassName, $q->fullClassName, $q->useMasterKey);
 
                 $closure($query);
-
-                $parseQueries[] = $query;
-            } else {
-                $parseQueries[] = $q->parseQueryFromQuery($query);
             }
+            $parseQueries[] = $q->parseQueryFromQuery ($query);
         }
 
         $orQuery = new static(
@@ -93,28 +101,25 @@ class Query
             $queries[0]->useMasterKey
         );
 
-        $orQuery->parseQuery = ParseQuery::orQueries($parseQueries);
+        $orQuery->parseQuery = ParseQuery::orQueries ($parseQueries);
 
         return $orQuery;
-    }
-
-    public function __construct($parseClassName, $fullClassName, $useMasterKey = false)
-    {
-        $this->parseClassName = $parseClassName;
-        $this->parseQuery     = new ParseQuery($parseClassName);
-        $this->fullClassName  = $fullClassName;
-        $this->useMasterKey   = $useMasterKey;
     }
 
     /**
      * Instance calls are passed to the Parse Query.
      *
+     * @param  string $method
+     * @param  array $parameters
      * @return $this
      */
-    public function __call($method, array $params)
+    public function __call($method, array $parameters)
     {
-        $ret = call_user_func_array([$this->parseQuery, $method], $params);
+        if (Str::startsWith ($method, 'where')) {
+            return $this->dynamicWhere ($method, $parameters);
+        }
 
+        $ret = call_user_func_array ([$this->parseQuery, $method], $parameters);
         if ($ret === $this->parseQuery) {
             return $this;
         }
@@ -149,15 +154,15 @@ class Query
      */
     public function orQuery()
     {
-        $queries = func_get_args();
+        $queries = func_get_args ();
 
-        if (is_array($queries[0])) {
+        if (is_array ($queries[0])) {
             $queries = $queries[0];
         }
 
-        array_unshift($queries, $this);
+        array_unshift ($queries, $this);
 
-        return static::orQueries($queries);
+        return static::orQueries ($queries);
     }
 
     /**
@@ -167,53 +172,135 @@ class Query
      * $query->where($key, $value);
      * ```
      *
+     * @param $key
+     * @param null $operator
+     * @param null $value
      * @return $this
+     * @throws Exception
      */
     public function where($key, $operator = null, $value = null)
     {
-        if (is_array($key)) {
+        if (is_array ($key)) {
             $where = $key;
 
             foreach ($where as $key => $value) {
-                if ($value instanceof ObjectModel) {
-                    $value = $value->getParseObject();
+                if ($value instanceof ParseModel) {
+                    $value = $value->getParseObject ();
                 }
 
-                $this->parseQuery->equalTo($key, $value);
+                $this->parseQuery->equalTo ($key, $value);
             }
-        } elseif (func_num_args() == 2) {
-            if ($operator instanceof ObjectModel) {
-                $operator = $operator->getParseObject();
+        } elseif (func_num_args () == 2) {
+            if ($operator instanceof ParseModel) {
+                $operator = $operator->getParseObject ();
             }
 
-            $this->parseQuery->equalTo($key, $operator);
+            $this->parseQuery->equalTo ($key, $operator);
         } else {
-            if (!array_key_exists($operator, self::OPERATORS)) {
+            if (!array_key_exists ($operator, self::OPERATORS)) {
                 throw new Exception("Invalid operator: " . $operator);
             }
 
-            call_user_func([$this, self::OPERATORS[$operator]], $key, $value);
+            call_user_func ([$this, self::OPERATORS[$operator]], $key, $value);
         }
 
         return $this;
     }
 
     /**
+     * ```
+     * $query->orWhere($key, '=', $value);
+     * $query->orWhere([$key => $value]);
+     * $query->orWhere($key, $value);
+     * ```
+     *
+     * @param $key
+     * @param null $operator
+     * @param null $value
+     * @return $this
+     * @throws Exception
+     */
+    public function orWhere($key, $operator = null, $value = null)
+    {
+        return $this->orQuery (function (Query $query) use ($key, $operator, $value) {
+            $query->where ($key, $operator, $value);
+        });
+    }
+
+    /**
+     * Handles dynamic "where" clauses to the query.
+     *
+     * @param  string $method
+     * @param  string $parameters
+     * @return $this
+     */
+    public function dynamicWhere($method, $parameters)
+    {
+        $finder = substr ($method, 5);
+        $segments = preg_split ('/(And|Or)(?=[A-Z])/', $finder, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        // The connector variable will determine which connector will be used for the
+        // query condition. We will change it as we come across new boolean values
+        // in the dynamic method strings, which could contain a number of these.
+        $connector = 'And';
+        $index = 0;
+        foreach ($segments as $segment) {
+            // If the segment is not a boolean connector, we can assume it is a column's name
+            // and we will add it to the query as a new constraint as a where clause, then
+            // we can keep iterating through the dynamic method string's segments again.
+            if ($segment != 'And' && $segment != 'Or' && $segment) {
+                return $this->addDynamic ($segment, $connector, $parameters, $index);
+                //$index++;
+            }
+
+            // Otherwise, we will store the connector so we know how the next where clause we
+            // find in the query should be connected to the previous ones, meaning we will
+            // have the proper boolean connector to connect the next where clause found.
+            else if ($segment) {
+                $connector = $segment;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a single dynamic where clause statement to the query.
+     *
+     * @param  string $segment
+     * @param  string $connector
+     * @param  array $parameters
+     * @param  int $index
+     * @return $this
+     */
+    protected function addDynamic($segment, $connector, $parameters, $index)
+    {
+        // Once we have parsed out the columns and formatted the boolean operators we
+        // are ready to add it to this query as a where clause just like any other
+        // clause on the query. Then we'll increment the parameter index values.
+        $bool = strtolower ($connector);
+
+        return ($bool == 'or') ?
+            $this->orWhere (Str::snake ($segment), '=', $parameters[$index]) :
+            $this->where (Str::snake ($segment), '=', $parameters[$index]);
+    }
+
+    /**
      * Alias for containedIn.
      *
      * @param  string $key
-     * @param  mixed  $values
+     * @param  mixed $values
      *
      * @return $this
      */
     public function whereIn($key, $values)
     {
-        return $this->containedIn($key, $values);
+        return $this->containedIn ($key, $values);
     }
 
     public function whereNotExists($key)
     {
-        $this->parseQuery->doesNotExist($key);
+        $this->parseQuery->doesNotExist ($key);
 
         return $this;
     }
@@ -222,15 +309,15 @@ class Query
      * Find a record by Object ID.
      *
      * @param string $objectId
-     * @param mixed  $selectKeys
+     * @param mixed $selectKeys
      *
-     * @return ObjectModel|null
+     * @return ParseModel|null
      */
     public function find($objectId, $selectKeys = null)
     {
-        $this->parseQuery->equalTo('objectId', $objectId);
+        $this->parseQuery->equalTo ('objectId', $objectId);
 
-        return $this->first($selectKeys);
+        return $this->first ($selectKeys);
     }
 
     /**
@@ -238,17 +325,17 @@ class Query
      * exception otherwise.
      *
      * @param string $objectId
-     * @param mixed  $selectKeys
+     * @param mixed $selectKeys
      *
-     * @return ObjectModel
+     * @return ParseModel
      *
      * @throws ModelNotFoundException
      */
     public function findOrFail($objectId, $selectKeys = null)
     {
-        $this->parseQuery->equalTo('objectId', $objectId);
+        $this->parseQuery->equalTo ('objectId', $objectId);
 
-        return $this->firstOrFail($selectKeys);
+        return $this->firstOrFail ($selectKeys);
     }
 
     /**
@@ -256,13 +343,13 @@ class Query
      * instance otherwise.
      *
      * @param string $objectId
-     * @param mixed  $selectKeys
+     * @param mixed $selectKeys
      *
-     * @return ObjectModel
+     * @return ParseModel
      */
     public function findOrNew($objectId, $selectKeys = null)
     {
-        $record = $this->find($objectId, $selectKeys);
+        $record = $this->find ($objectId, $selectKeys);
 
         if (!$record) {
             $class = $this->fullClassName;
@@ -278,18 +365,18 @@ class Query
      *
      * @param mixed $selectKeys
      *
-     * @return ObjectModel|null
+     * @return ParseModel|null
      */
     public function first($selectKeys = null)
     {
         if ($selectKeys) {
-            $this->parseQuery->select($selectKeys);
+            $this->parseQuery->select ($selectKeys);
         }
 
-        $data = $this->parseQuery->first($this->useMasterKey);
+        $data = $this->parseQuery->first ($this->useMasterKey);
 
         if ($data) {
-            return $this->createModel($data);
+            return $this->createModel ($data);
         }
     }
 
@@ -298,20 +385,20 @@ class Query
      * or throw an exception otherwise.
      *
      * @param string $objectId
-     * @param mixed  $selectKeys
+     * @param mixed $selectKeys
      *
-     * @return ObjectModel
+     * @return ParseModel
      *
      * @throws ModelNotFoundException
      */
     public function firstOrFail($selectKeys = null)
     {
-        $first = $this->first($selectKeys);
+        $first = $this->first ($selectKeys);
 
         if (!$first) {
             $e = new ModelNotFoundException();
 
-            $e->setModel($this->fullClassName);
+            $e->setModel ($this->fullClassName);
 
             throw $e;
         }
@@ -325,13 +412,11 @@ class Query
      *
      * @param array $data
      *
-     * @return ObjectModel
+     * @return ParseModel
      */
     public function firstOrNew(array $data)
     {
-        $record = $this->where($data)->first();
-
-        if ($record) {
+        if (!is_null ($record = $this->where ($data)->first ())) {
             return $record;
         }
 
@@ -346,14 +431,14 @@ class Query
      *
      * @param array $data
      *
-     * @return ObjectModel
+     * @return ParseModel
      */
     public function firstOrCreate(array $data)
     {
-        $record = $this->firstOrNew($data);
+        $record = $this->firstOrNew ($data);
 
         if (!$record->id) {
-            $record->save();
+            $record->save ();
         }
 
         return $record;
@@ -369,23 +454,23 @@ class Query
     public function get($selectKeys = null)
     {
         if ($selectKeys) {
-            $this->select($selectKeys);
+            $this->select ($selectKeys);
         }
 
-        return $this->createModels($this->parseQuery->find($this->useMasterKey));
+        return $this->createModels ($this->parseQuery->find ($this->useMasterKey));
     }
 
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
-     * @param string           $key
+     * @param string $key
      * @param Query|ParseQuery $query
      *
      * @return $this
      */
     public function matchesQuery($key, $query)
     {
-        $this->parseQuery->matchesQuery($key, $this->parseQueryFromQuery($query));
+        $this->parseQuery->matchesQuery ($key, $this->parseQueryFromQuery ($query));
 
         return $this;
     }
@@ -393,14 +478,14 @@ class Query
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
-     * @param string           $key
+     * @param string $key
      * @param Query|ParseQuery $query
      *
      * @return $this
      */
     public function doesNotMatchQuery($key, $query)
     {
-        $this->parseQuery->doesNotMatchQuery($key, $this->parseQueryFromQuery($query));
+        $this->parseQuery->doesNotMatchQuery ($key, $this->parseQueryFromQuery ($query));
 
         return $this;
     }
@@ -408,14 +493,14 @@ class Query
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
-     * @param string           $key
+     * @param string $key
      * @param Query|ParseQuery $query
      *
      * @return $this
      */
     public function matchesKeyInQuery($key, $queryKey, $query)
     {
-        $this->parseQuery->matchesKeyInQuery($key, $queryKey, $this->parseQueryFromQuery($query));
+        $this->parseQuery->matchesKeyInQuery ($key, $queryKey, $this->parseQueryFromQuery ($query));
 
         return $this;
     }
@@ -423,14 +508,14 @@ class Query
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *
-     * @param string           $key
+     * @param string $key
      * @param Query|ParseQuery $query
      *
      * @return $this
      */
     public function doesNotMatchKeyInQuery($key, $queryKey, $query)
     {
-        $this->parseQuery->doesNotMatchKeyInQuery($key, $queryKey, $this->parseQueryFromQuery($query));
+        $this->parseQuery->doesNotMatchKeyInQuery ($key, $queryKey, $this->parseQueryFromQuery ($query));
 
         return $this;
     }
@@ -438,43 +523,199 @@ class Query
     public function orderBy($key, $order = 1)
     {
         if ($order == 1) {
-            $this->ascending($key);
+            $this->parseQuery->ascending ($key);
         } else {
-            $this->descending($key);
+            $this->parseQuery->descending ($key);
         }
 
         return $this;
     }
 
     /**
-     * ObjectModels are replaced for their ParseObjects. It also accepts any kind
+     * Add an "order by" clause for a timestamp to the query.
+     *
+     * @param  string $column
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function latest($column = 'createdAt')
+    {
+        return $this->orderBy ($column, 0);
+    }
+
+    /**
+     * Add an "order by" clause for a timestamp to the query.
+     *
+     * @param  string $column
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function oldest($column = 'createdAt')
+    {
+        return $this->orderBy ($column, 1);
+    }
+
+    /**
+     * Set the skip parameter as a query constraint.
+     *
+     * @param int $n Number of objects to skip from start of results.
+     * @return $this
+     */
+    public function skip($n)
+    {
+        $this->parseQuery->skip ($n);
+        return $this;
+    }
+
+    /**
+     * Set the limit parameter as a query constraint.
+     *
+     * @param int $n Number of objects to return from the query.
+     * @return $this
+     */
+    public function limit($n)
+    {
+        $this->parseQuery->limit ($n);
+        return $this;
+    }
+
+    /**
+     * Set the limit and offset for a given page.
+     *
+     * @param  int $page
+     * @param  int $perPage
+     * @return $this
+     */
+    public function forPage($page, $perPage = 50)
+    {
+        return $this->skip (($page - 1) * $perPage)->limit ($perPage);
+    }
+
+    /**
+     * Get a paginator only supporting simple next and previous links.
+     *
+     * This is more efficient on larger data-sets, etc.
+     *
+     * @param  int $perPage
+     * @param  array $columns
+     * @param  string $pageName
+     * @param  int|null $page
+     * @return \Illuminate\Contracts\Pagination\Paginator
+     */
+    public function paginate($perPage = 15, $columns = null, $pageName = 'page', $page = null)
+    {
+        $page = $page ?: Paginator::resolveCurrentPage ($pageName);
+
+        $this->skip (($page - 1) * $perPage)->limit ($perPage + 1);
+
+        return new Paginator($this->get ($columns), $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath (),
+            'pageName' => $pageName,
+        ]);
+    }
+
+    /**
+     * Chunk the results of the query.
+     *
+     * @param  int $count
+     * @param  callable $callback
+     * @return bool
+     */
+    public function chunk($count, callable $callback)
+    {
+        $page = 1;
+
+        do {
+            $results = $this->forPage ($page, $count)->get ();
+            $countResults = $results->count ();
+
+            if ($countResults == 0) {
+                break;
+            }
+
+            // On each chunk result set, we will pass them to the callback and then let the
+            // developer take care of everything within the callback, which allows us to
+            // keep the memory low for spinning through large result sets for working.
+            if (call_user_func ($callback, $results) === false) {
+                return false;
+            }
+
+            $page++;
+        } while ($countResults == $count);
+
+        return true;
+    }
+
+    /**
+     * Get an array with the values of a given column.
+     *
+     * @param  string $column
+     * @param  string|null $key
+     * @return \Illuminate\Support\Collection
+     */
+    public function pluck($column, $key = null)
+    {
+        $results = $this->get (is_null ($key) ? [$column] : [$column, $key]);
+
+        // If the columns are qualified with a table or have an alias, we cannot use
+        // those directly in the "pluck" operations since the results from the DB
+        // are only keyed by the column itself. We'll strip the table out here.
+        return $results->pluck (
+            $this->stripTableForPluck ($column),
+            $this->stripTableForPluck ($key)
+        );
+    }
+
+    /**
+     * Strip off the table name or alias from a column identifier.
+     *
+     * @param  string $column
+     * @return string|null
+     */
+    protected function stripTableForPluck($column)
+    {
+        return is_null ($column) ? $column : last (preg_split ('~\.| ~', $column));
+    }
+
+    /**
+     * Concatenate values of a given column as a string.
+     *
+     * @param  string $column
+     * @param  string $glue
+     * @return string
+     */
+    public function implode($column, $glue = '')
+    {
+        return $this->pluck ($column)->implode ($glue);
+    }
+
+    /**
+     * ParseModels are replaced for their ParseObjects. It also accepts any kind
      * of traversable variable.
      *
      * @param  string $key
-     * @param  mixed  $values
+     * @param  mixed $values
      *
      * @return $this
      */
     public function containedIn($key, $values)
     {
-        if (!is_array($values) && !$values instanceof Traversable) {
-            $values = [ $values ];
+        if (!is_array ($values) && !$values instanceof Traversable) {
+            $values = [$values];
         }
 
         foreach ($values as $k => $value) {
-            if ($value instanceof ObjectModel) {
-                $values[$k] = $value->getParseObject();
+            if ($value instanceof ParseModel) {
+                $values[$k] = $value->getParseObject ();
             }
         }
 
-        $this->parseQuery->containedIn($key, $values);
+        $this->parseQuery->containedIn ($key, $values);
 
         return $this;
     }
 
     public function count()
     {
-        return $this->parseQuery->count($this->useMasterKey);
+        return $this->parseQuery->count ($this->useMasterKey);
     }
 
     /**
@@ -486,13 +727,13 @@ class Query
      */
     public function with($keys)
     {
-        if (is_string($keys)) {
-            $keys = func_get_args();
+        if (is_string ($keys)) {
+            $keys = func_get_args ();
         }
 
-        $this->includeKeys = array_merge($this->includeKeys, $keys);
+        $this->includeKeys = array_merge ($this->includeKeys, $keys);
 
-        $this->parseQuery->includeKey($keys);
+        $this->parseQuery->includeKey ($keys);
 
         return $this;
     }
@@ -520,10 +761,10 @@ class Query
     protected function createModels(array $objects)
     {
         $className = $this->fullClassName;
-        $models    = [];
+        $models = [];
 
         foreach ($objects as $object) {
-            $models[] = $this->createModel($object);
+            $models[] = $this->createModel ($object);
         }
 
         return new Collection($models);

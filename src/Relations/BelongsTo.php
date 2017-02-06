@@ -2,7 +2,7 @@
 
 namespace Parziphal\Parse\Relations;
 
-use Parziphal\Parse\ObjectModel;
+use Parziphal\Parse\ParseModel;
 
 class BelongsTo extends Relation
 {
@@ -12,17 +12,17 @@ class BelongsTo extends Relation
 
     protected $childObject;
 
-    public function __construct($embeddedClass, $keyName, ObjectModel $childObject)
+    public function __construct($embeddedClass, $keyName, ParseModel $childObject)
     {
         $this->embeddedClass = $embeddedClass;
-        $this->childObject   = $childObject;
-        $this->keyName       = $keyName;
+        $this->childObject = $childObject;
+        $this->keyName = $keyName;
     }
 
     public function getResults()
     {
         $class = $this->embeddedClass;
 
-        return (new $class($this->childObject->getParseObject()->get($this->keyName)))->fetch();
+        return (new $class($this->childObject->getParseObject ()->get ($this->keyName)))->fetch ();
     }
 }

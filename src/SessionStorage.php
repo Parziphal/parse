@@ -10,14 +10,14 @@ class SessionStorage implements ParseStorageInterface
     /**
      * Sets a key-value pair in storage.
      *
-     * @param string $key   The key to set
-     * @param mixed  $value The value to set
+     * @param string $key The key to set
+     * @param mixed $value The value to set
      *
      * @return null
      */
     public function set($key, $value)
     {
-        Session::set($key, $value);
+        Session::set ($key, $value);
     }
 
     /**
@@ -29,7 +29,7 @@ class SessionStorage implements ParseStorageInterface
      */
     public function remove($key)
     {
-        Session::remove($key);
+        Session::remove ($key);
     }
 
     /**
@@ -41,7 +41,7 @@ class SessionStorage implements ParseStorageInterface
      */
     public function get($key)
     {
-        return Session::get($key);
+        return Session::get ($key);
     }
 
     /**
@@ -51,7 +51,7 @@ class SessionStorage implements ParseStorageInterface
      */
     public function clear()
     {
-        Sessions::clear();
+        Sessions::clear ();
     }
 
     /**
@@ -63,7 +63,7 @@ class SessionStorage implements ParseStorageInterface
      */
     public function save()
     {
-        Session::save();
+        Session::save ();
     }
 
     /**
@@ -73,7 +73,7 @@ class SessionStorage implements ParseStorageInterface
      */
     public function getKeys()
     {
-        return array_keys($this->getAll());
+        return array_keys ($this->getAll ());
     }
 
     /**
@@ -83,6 +83,6 @@ class SessionStorage implements ParseStorageInterface
      */
     public function getAll()
     {
-        return Session::all();
+        return Session::all ();
     }
 }

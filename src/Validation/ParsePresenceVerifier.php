@@ -38,7 +38,7 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
         /**
          * FIXME: parse WHERE IN not work :/
          */
-        $query = $this->table ($collection)->getParseQuery ()->containedIn ($column, $values);
+        $query = $this->table ($collection)->where($column, "in", $values);
 
         foreach ($extra as $key => $extraValue) {
             if ($extraValue instanceof Closure) {

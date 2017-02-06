@@ -2,12 +2,12 @@
 
 namespace Parziphal\Parse\Test\Models;
 
-use Parziphal\Parse\ObjectModel;
+use Parziphal\Parse\ParseModel;
 
-class Category extends ObjectModel
+class Category extends ParseModel
 {
     public function posts()
     {
-        return $this->hasManyArray(Post::class);
+        return $this->hasManyArray (Post::class);
     }
 }

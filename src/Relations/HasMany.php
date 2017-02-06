@@ -2,56 +2,56 @@
 
 namespace Parziphal\Parse\Relations;
 
+use Parziphal\Parse\ParseModel;
 use Parziphal\Parse\Query;
-use Parziphal\Parse\ObjectModel;
 
 class HasMany extends RelationWithQuery
 {
     protected $foreignKey;
 
-    public function __construct(Query $query, ObjectModel $parentObject, $foreignKey)
+    public function __construct(Query $query, ParseModel $parentObject, $foreignKey)
     {
         $this->foreignKey = $foreignKey;
 
-        parent::__construct($query, $parentObject);
+        parent::__construct ($query, $parentObject);
     }
 
     public function addConstraints()
     {
-        $this->query->where($this->foreignKey, $this->parentObject);
+        $this->query->where ($this->foreignKey, $this->parentObject);
     }
 
     public function getResults()
     {
-        return $this->query->get();
+        return $this->query->get ();
     }
 
     /**
      * Create a new child object, and relate it to this.
      *
-     * @param  array        $data
-     * @return ObjectModel
+     * @param  array $data
+     * @return ParseModel
      */
     public function create(array $data)
     {
-        $class = $this->query->getFullClassName();
+        $class = $this->query->getFullClassName ();
 
         $model = new $class($data);
 
-        return $this->save($model);
+        return $this->save ($model);
     }
 
     /**
      * Relate other object to this object.
      *
-     * @param  ObjectModel $model The child object
-     * @return ObjectModel
+     * @param  ParseModel $model The child object
+     * @return ParseModel
      */
-    public function save(ObjectModel $model)
+    public function save(ParseModel $model)
     {
         $model->{$this->foreignKey} = $this->parentObject;
 
-        $model->save();
+        $model->save ();
 
         return $model;
     }

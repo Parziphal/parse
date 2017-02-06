@@ -2,8 +2,8 @@
 
 namespace Parziphal\Parse\Relations;
 
-use Parziphal\Parse\ObjectModel;
 use Illuminate\Support\Collection;
+use Parziphal\Parse\ParseModel;
 
 class BelongsToMany extends Relation
 {
@@ -17,14 +17,27 @@ class BelongsToMany extends Relation
 
     protected $childrenQueue = [];
 
-    public function __construct($embeddedClass, $keyName, ObjectModel $parentObject)
+    public function __construct($embeddedClass, $keyName, ParseModel $parentObject)
     {
         $this->embeddedClass = $embeddedClass;
-        $this->parentObject  = $parentObject;
-        $this->keyName       = $keyName;
-        $this->collection    = new Collection();
+        $this->parentObject = $parentObject;
+        $this->keyName = $keyName;
+        $this->collection = new Collection();
 
-        $this->createItems();
+        $this->createItems ();
+    }
+
+    protected function createItems()
+    {
+        $items = $this->parentObject->getParseObject ()->get ($this->keyName);
+
+        if ($items) {
+            $class = $this->embeddedClass;
+
+            foreach ($items as $item) {
+                $this->collection[] = new $class($item);
+            }
+        }
     }
 
     /**
@@ -32,7 +45,7 @@ class BelongsToMany extends Relation
      */
     public function __call($method, $params)
     {
-        $ret = call_user_func_array([$this->collection, $method], $params);
+        $ret = call_user_func_array ([$this->collection, $method], $params);
 
         if ($ret === $this->collection) {
             return $this;
@@ -58,48 +71,35 @@ class BelongsToMany extends Relation
      * The children will be added with `addUnique` or `add`
      * depending on the $unique parameter.
      *
-     * @param ObjectModel|ObjectModel[]  $others
-     * @param bool                       $unique
+     * @param ParseModel|ParseModel[] $others
+     * @param bool $unique
      */
     public function save($others, $unique = true)
     {
-        if (!is_array($others)) {
-            $this->addOne($others, $unique);
+        if (!is_array ($others)) {
+            $this->addOne ($others, $unique);
         } else {
             foreach ($others as $other) {
-                $this->addOne($other, $unique);
+                $this->addOne ($other, $unique);
             }
         }
 
-        $this->parentObject->save();
+        $this->parentObject->save ();
     }
 
-    protected function createItems()
+    protected function addOne(ParseModel $other, $unique = true)
     {
-        $items = $this->parentObject->getParseObject()->get($this->keyName);
+        $parentParse = $this->parentObject->getParseObject ();
 
-        if ($items) {
-            $class = $this->embeddedClass;
-
-            foreach ($items as $item) {
-                $this->collection[] = new $class($item);
-            }
-        }
-    }
-
-    protected function addOne(ObjectModel $other, $unique = true)
-    {
-        $parentParse = $this->parentObject->getParseObject();
-
-        $count = count($parentParse->{$this->keyName});
+        $count = count ($parentParse->{$this->keyName});
 
         if ($unique) {
-            $this->parentObject->addUnique($this->keyName, [$other->getParseObject()]);
+            $this->parentObject->addUnique ($this->keyName, [$other->getParseObject ()]);
         } else {
-            $this->parentObject->add($this->keyName, [$other->getParseObject()]);
+            $this->parentObject->add ($this->keyName, [$other->getParseObject ()]);
         }
 
-        if ($count < count($parentParse->{$this->keyName})) {
+        if ($count < count ($parentParse->{$this->keyName})) {
             $this->childrenQueue[] = $other;
 
             $this->collection[] = $other;

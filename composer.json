@@ -1,16 +1,22 @@
 {
-    "name": "parziphal/parse",
-    "description": "An Eloquent-like interface for Parse",
-    "keywords": ["laravel", "parse", "sdk", "parse-sdk", "eloquent"],
-    "license": "MIT",
-    "require": {
-        "php": ">=5.5.9",
-        "laravel/framework": "5.2.*|5.3.*",
-        "parse/php-sdk": "~1.2.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "Parziphal\\Parse\\": "src/"
-        }
+  "name": "evaldas-leliuga/parse",
+  "description": "An Eloquent-like interface for Parse",
+  "keywords": [
+    "laravel",
+    "parse",
+    "sdk",
+    "parse-sdk",
+    "eloquent"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=5.5.9",
+    "laravel/framework": "5.2.*|5.3.*",
+    "parse/php-sdk": "~1.2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Parziphal\\Parse\\": "src/"
     }
+  }
 }

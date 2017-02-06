@@ -2,7 +2,6 @@
 
 namespace Parziphal\Parse\Console;
 
-use Illuminate\Support\Str;
 use Illuminate\Console\GeneratorCommand;
 
 class ModelMakeCommand extends GeneratorCommand
@@ -26,7 +25,7 @@ class ModelMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $type = 'ObjectModel';
+    protected $type = 'ParseModel';
 
     /**
      * Get the stub file for the generator.
