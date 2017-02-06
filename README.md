@@ -129,7 +129,7 @@ $posts = Post::where([
   ->containedIn('foo', $foos)
   ->get();
 
-$post = Post::where($data)->firstOrCreate();
+$post = Post::firstOrCreate($data);
 ```
 
 ## Using Master Key
