@@ -17,7 +17,7 @@ Add the service provider in your `config/app.php` file:
 ```php
 'providers' => [
     // etc...
-    Parziphal\Parse\ParseServiceProvider::class,
+    Illuminate\Parse\ParseServiceProvider::class,
 ],
 ```
 
@@ -35,7 +35,7 @@ Set your configuration in `config/parse.php`, or in your `.env` file by setting 
 
 ## Log in with Parse
 
-In `config/auth.php`, set your desired users driver (see below), and set the class of the User model you'd like to use (it must extend from `Parziphal\Parse\UserModel`). You could just make the default `App\User` class to extend `Parziphal\Parse\Auth\UserModel`, which is a User class ready to be used for authentication.
+In `config/auth.php`, set your desired users driver (see below), and set the class of the User model you'd like to use (it must extend from `Illuminate\Parse\UserModel`). You could just make the default `App\User` class to extend `Illuminate\Parse\Auth\UserModel`, which is a User class ready to be used for authentication.
 
 The config would look like this:
 
@@ -54,12 +54,12 @@ There are 3 users providers available:
 * `parse-facebook` which requires users to identify using their Facebook account
 * `parse-any` which lets users authenticate with either username/password or Facebook
 
-You can use the `Parziphal\Parse\Auth\AuthenticatesWithFacebook` trait in your auth controller (`App\Http\Controllers\Auth\AuthController` by default). The trait has methods to handle Facebook authentication/registration. Just bind them to a route and you're ready to go.
+You can use the `Illuminate\Parse\Auth\AuthenticatesWithFacebook` trait in your auth controller (`App\Http\Controllers\Auth\AuthController` by default). The trait has methods to handle Facebook authentication/registration. Just bind them to a route and you're ready to go.
 
 Note that the trait can respond in two ways: with a redirect, or with JSON. The JSON response can be configured:
 
 ```php
-// Interface of Parziphal\Parse\Auth\AuthenticatesWithFacebook
+// Interface of Illuminate\Parse\Auth\AuthenticatesWithFacebook
 // The *Api methods respond with $apiResponse.
 trait AuthenticatesWithFacebook
 {
@@ -79,7 +79,7 @@ trait AuthenticatesWithFacebook
 
 ## ParseModels
 
-The `Parziphal\Parse\ParseModel` class is a wrapper for `Parse\ParseObject`. It behaves as an Eloquent model, so you could do stuff like:
+The `Illuminate\Parse\ParseModel` class is a wrapper for `Parse\ParseObject`. It behaves as an Eloquent model, so you could do stuff like:
 
 ```php
 // Instantiate with data
@@ -115,7 +115,7 @@ $pointer = Post::pointer($postId);
 
 ## Queries
 
-`Parziphal\Parse\Query` is a wrapper for `Parse\ParseQuery`, which also behaves like a Eloquent Builder:
+`Illuminate\Parse\Query` is a wrapper for `Parse\ParseQuery`, which also behaves like a Eloquent Builder:
 
 ```php
 // Note that `get` is like Eloquent Builder's `get`, which executes the query,

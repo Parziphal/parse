@@ -1,9 +1,9 @@
 <?php
 
-namespace Parziphal\Parse\Relations;
+namespace Illuminate\Parse\Relations;
 
-use Parziphal\Parse\ParseModel;
-use Parziphal\Parse\Query;
+use Illuminate\Parse\ParseModel;
+use Illuminate\Parse\Query;
 
 class HasMany extends RelationWithQuery
 {

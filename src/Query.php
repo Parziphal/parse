@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse;
+namespace Illuminate\Parse;
 
 use Closure;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

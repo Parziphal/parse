@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse\Relations;
+namespace Illuminate\Parse\Relations;
 
 abstract class Relation
 {

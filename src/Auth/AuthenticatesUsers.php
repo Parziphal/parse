@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse\Auth;
+namespace Illuminate\Parse\Auth;
 
 use Illuminate\Foundation\Auth\RedirectsUsers;
 use Illuminate\Foundation\Auth\ThrottlesLogins;

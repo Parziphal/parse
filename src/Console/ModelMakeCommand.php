@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse\Console;
+namespace Illuminate\Parse\Console;
 
 use Illuminate\Console\GeneratorCommand;
 

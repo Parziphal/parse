@@ -1,11 +1,11 @@
 <?php
 
-namespace Parziphal\Parse\Test;
+namespace Illuminate\Parse\Test;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Parziphal\Parse\Test\Models\Category;
-use Parziphal\Parse\Test\Models\Post;
-use Parziphal\Parse\Test\Models\User;
+use Illuminate\Parse\Test\Models\Category;
+use Illuminate\Parse\Test\Models\Post;
+use Illuminate\Parse\Test\Models\User;
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,17 +1,17 @@
 <?php
 
-namespace Parziphal\Parse;
+namespace Illuminate\Parse;
 
 use Illuminate\Foundation\Application as LaravelApplication;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
 use Parse\ParseClient;
-use Parziphal\Parse\Auth\Providers\AnyUserProvider;
-use Parziphal\Parse\Auth\Providers\FacebookUserProvider;
-use Parziphal\Parse\Auth\Providers\UserProvider;
-use Parziphal\Parse\Console\ModelMakeCommand;
-use Parziphal\Parse\Validation\ParsePresenceVerifier;
+use Illuminate\Parse\Auth\Providers\AnyUserProvider;
+use Illuminate\Parse\Auth\Providers\FacebookUserProvider;
+use Illuminate\Parse\Auth\Providers\UserProvider;
+use Illuminate\Parse\Console\ModelMakeCommand;
+use Illuminate\Parse\Validation\ParsePresenceVerifier;
 
 class ParseServiceProvider extends ServiceProvider
 {

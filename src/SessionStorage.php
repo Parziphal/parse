@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse;
+namespace Illuminate\Parse;
 
 use Illuminate\Support\Facades\Session;
 use Parse\ParseStorageInterface;

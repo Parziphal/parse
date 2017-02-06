@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse\Auth;
+namespace Illuminate\Parse\Auth;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,7 +39,7 @@ trait AuthenticatesWithFacebook
      * The ParseException is not catched as it normally shouldn't happen.
      *
      * @param Request $request
-     * @return \Parziphal\Parse\UserModel|null
+     * @return \Illuminate\Parse\UserModel|null
      * @throws ParseException
      */
     protected function logInWithFacebook(Request $request)

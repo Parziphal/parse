@@ -1,9 +1,9 @@
 <?php
 
-namespace Parziphal\Parse\Relations;
+namespace Illuminate\Parse\Relations;
 
 use Illuminate\Support\Collection;
-use Parziphal\Parse\ParseModel;
+use Illuminate\Parse\ParseModel;
 
 class BelongsToMany extends Relation
 {

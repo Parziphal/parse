@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse;
+namespace Illuminate\Parse;
 
 use DateTime;
 use Illuminate\Contracts\Support\Arrayable;
@@ -11,11 +11,11 @@ use JsonSerializable;
 use LogicException;
 use Parse\ParseFile;
 use Parse\ParseObject;
-use Parziphal\Parse\Relations\BelongsTo;
-use Parziphal\Parse\Relations\BelongsToMany;
-use Parziphal\Parse\Relations\HasMany;
-use Parziphal\Parse\Relations\HasManyArray;
-use Parziphal\Parse\Relations\Relation;
+use Illuminate\Parse\Relations\BelongsTo;
+use Illuminate\Parse\Relations\BelongsToMany;
+use Illuminate\Parse\Relations\HasMany;
+use Illuminate\Parse\Relations\HasManyArray;
+use Illuminate\Parse\Relations\Relation;
 use ReflectionClass;
 
 abstract class ParseModel implements Arrayable, Jsonable, JsonSerializable
@@ -569,7 +569,7 @@ abstract class ParseModel implements Arrayable, Jsonable, JsonSerializable
 
         if (!$relations instanceof Relation) {
             throw new LogicException('Relationship method must return an object of type '
-                . 'Parziphal\Parse\Relations\Relation');
+                . 'Illuminate\Parse\Relations\Relation');
         }
 
         $results = $relations->getResults ();

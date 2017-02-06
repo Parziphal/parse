@@ -4,8 +4,8 @@ use Parse\ParseClient;
 
 $autoloader = require __DIR__ . '/../vendor/autoload.php';
 
-$autoloader->addPsr4 ('Parziphal\\Parse\\Test\\', __DIR__);
-$autoloader->addPsr4 ('Parziphal\\Parse\\', __DIR__ . '/../src', true);
+$autoloader->addPsr4 ('Illuminate\\Parse\\Test\\', __DIR__);
+$autoloader->addPsr4 ('Illuminate\\Parse\\', __DIR__ . '/../src', true);
 
 $appId = getenv ('parseAppId');
 $masterKey = getenv ('parseMasterKey');

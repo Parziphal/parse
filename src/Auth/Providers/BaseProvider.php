@@ -1,11 +1,11 @@
 <?php
 
-namespace Parziphal\Parse\Auth\Providers;
+namespace Illuminate\Parse\Auth\Providers;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Parse\ParseException;
-use Parziphal\Parse\Query;
+use Illuminate\Parse\Query;
 
 abstract class BaseProvider implements UserProvider
 {

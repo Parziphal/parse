@@ -1,12 +1,12 @@
 <?php
 
-namespace Parziphal\Parse\Validation;
+namespace Illuminate\Parse\Validation;
 
 use Closure;
 use Illuminate\Console\AppNamespaceDetectorTrait;
 use Illuminate\Support\Str;
 use Illuminate\Validation\PresenceVerifierInterface;
-use Parziphal\Parse\Query;
+use Illuminate\Parse\Query;
 
 class ParsePresenceVerifier implements PresenceVerifierInterface
 {
@@ -56,7 +56,7 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
     /**
      * Add a "where" clause to the given query.
      *
-     * @param  \Parziphal\Parse\Query $query
+     * @param  \Illuminate\Parse\Query $query
      * @param  string $key
      * @param  string $extraValue
      * @return void
@@ -88,7 +88,7 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
      * Get a query builder for the given table.
      *
      * @param string $table
-     * @return \Parziphal\Parse\Query
+     * @return \Illuminate\Parse\Query
      */
     protected function table($table)
     {

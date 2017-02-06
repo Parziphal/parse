@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse;
+namespace Illuminate\Parse;
 
 use Parse\ParseUser;
 

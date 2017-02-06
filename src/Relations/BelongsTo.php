@@ -1,8 +1,8 @@
 <?php
 
-namespace Parziphal\Parse\Relations;
+namespace Illuminate\Parse\Relations;
 
-use Parziphal\Parse\ParseModel;
+use Illuminate\Parse\ParseModel;
 
 class BelongsTo extends Relation
 {

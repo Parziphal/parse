@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use Parziphal\Parse\ParseModel;
+use Illuminate\Parse\ParseModel;
 
 class DummyClass extends ParseModel
 {

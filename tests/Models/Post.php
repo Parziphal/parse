@@ -1,8 +1,8 @@
 <?php
 
-namespace Parziphal\Parse\Test\Models;
+namespace Illuminate\Parse\Test\Models;
 
-use Parziphal\Parse\ParseModel;
+use Illuminate\Parse\ParseModel;
 
 class Post extends ParseModel
 {

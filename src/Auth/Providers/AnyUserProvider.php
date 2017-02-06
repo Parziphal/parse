@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse\Auth\Providers;
+namespace Illuminate\Parse\Auth\Providers;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 

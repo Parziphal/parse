@@ -1,6 +1,6 @@
 <?php
 
-namespace Parziphal\Parse\Auth;
+namespace Illuminate\Parse\Auth;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
