@@ -3,7 +3,7 @@
 namespace Illuminate\Parse\Relations;
 
 use Illuminate\Support\Collection;
-use Illuminate\Parse\ParseModel;
+use Illuminate\Parse\Model;
 
 class BelongsToMany extends Relation
 {
@@ -17,7 +17,7 @@ class BelongsToMany extends Relation
 
     protected $childrenQueue = [];
 
-    public function __construct($embeddedClass, $keyName, ParseModel $parentObject)
+    public function __construct($embeddedClass, $keyName, Model $parentObject)
     {
         $this->embeddedClass = $embeddedClass;
         $this->parentObject = $parentObject;
@@ -71,7 +71,7 @@ class BelongsToMany extends Relation
      * The children will be added with `addUnique` or `add`
      * depending on the $unique parameter.
      *
-     * @param ParseModel|ParseModel[] $others
+     * @param Model|Model[] $others
      * @param bool $unique
      */
     public function save($others, $unique = true)
@@ -87,7 +87,7 @@ class BelongsToMany extends Relation
         $this->parentObject->save ();
     }
 
-    protected function addOne(ParseModel $other, $unique = true)
+    protected function addOne(Model $other, $unique = true)
     {
         $parentParse = $this->parentObject->getParseObject ();
 

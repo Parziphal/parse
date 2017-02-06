@@ -25,7 +25,7 @@ class ModelMakeCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $type = 'ParseModel';
+    protected $type = 'Model';
 
     /**
      * Get the stub file for the generator.

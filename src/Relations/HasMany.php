@@ -2,14 +2,14 @@
 
 namespace Illuminate\Parse\Relations;
 
-use Illuminate\Parse\ParseModel;
+use Illuminate\Parse\Model;
 use Illuminate\Parse\Query;
 
 class HasMany extends RelationWithQuery
 {
     protected $foreignKey;
 
-    public function __construct(Query $query, ParseModel $parentObject, $foreignKey)
+    public function __construct(Query $query, Model $parentObject, $foreignKey)
     {
         $this->foreignKey = $foreignKey;
 
@@ -30,7 +30,7 @@ class HasMany extends RelationWithQuery
      * Create a new child object, and relate it to this.
      *
      * @param  array $data
-     * @return ParseModel
+     * @return Model
      */
     public function create(array $data)
     {
@@ -44,10 +44,10 @@ class HasMany extends RelationWithQuery
     /**
      * Relate other object to this object.
      *
-     * @param  ParseModel $model The child object
-     * @return ParseModel
+     * @param  Model $model The child object
+     * @return Model
      */
-    public function save(ParseModel $model)
+    public function save(Model $model)
     {
         $model->{$this->foreignKey} = $this->parentObject;
 

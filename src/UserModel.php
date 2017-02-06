@@ -4,7 +4,7 @@ namespace Illuminate\Parse;
 
 use Parse\ParseUser;
 
-class UserModel extends ParseModel
+class UserModel extends Model
 {
     protected static $parseClassName = '_User';
 

@@ -2,9 +2,9 @@
 
 namespace DummyNamespace;
 
-use Illuminate\Parse\ParseModel;
+use Illuminate\Parse\Model;
 
-class DummyClass extends ParseModel
+class DummyClass extends Model
 {
     
 }

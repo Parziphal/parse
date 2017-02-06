@@ -18,7 +18,7 @@ use Illuminate\Parse\Relations\HasManyArray;
 use Illuminate\Parse\Relations\Relation;
 use ReflectionClass;
 
-abstract class ParseModel implements Arrayable, Jsonable, JsonSerializable
+abstract class Model implements Arrayable, Jsonable, JsonSerializable
 {
     /**
      * The name of the "created at" column.
@@ -216,7 +216,7 @@ abstract class ParseModel implements Arrayable, Jsonable, JsonSerializable
             } else {
                 $this->parseObject->setArray ($key, $value);
             }
-        } elseif ($value instanceof ParseModel) {
+        } elseif ($value instanceof Model) {
             $this->parseObject->set ($key, $value->parseObject);
         } elseif ($key == 'acl') {
             $this->parseObject->setACL ($value);

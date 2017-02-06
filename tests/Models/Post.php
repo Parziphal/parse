@@ -2,9 +2,9 @@
 
 namespace Illuminate\Parse\Test\Models;
 
-use Illuminate\Parse\ParseModel;
+use Illuminate\Parse\Model;
 
-class Post extends ParseModel
+class Post extends Model
 {
     public function categories()
     {

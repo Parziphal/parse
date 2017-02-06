@@ -8,7 +8,7 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 * Use facade classes that wraps Parse's classes, exposing an Eloquent-like interface.
 * Enabled to work with Parse's relations.
 * User authentication using username/password combinations and/or with Facebook.
-* Command to create ParseModels (`parse:model Foo`).
+* Command to create Models (`parse:model Foo`).
 
 ## Setup
 
@@ -77,9 +77,9 @@ trait AuthenticatesWithFacebook
 }
 ```
 
-## ParseModels
+## Models
 
-The `Illuminate\Parse\ParseModel` class is a wrapper for `Parse\ParseObject`. It behaves as an Eloquent model, so you could do stuff like:
+The `Illuminate\Parse\Model` class is a wrapper for `Parse\ParseObject`. It behaves as an Eloquent model, so you could do stuff like:
 
 ```php
 // Instantiate with data
@@ -153,13 +153,13 @@ $posts = Post::all(true);
 
 // To configure a model to always use Master Key, define
 // a protected static property `$defaultUseMasterKey`:
-class Post extends ParseModel
+class Post extends Model
 {
     protected static $defaultUseMasterKey = true;
 }
 
 // Or use this to make all models use master key by default
-ParseModel::setDefaultUseMasterKey(true);
+Model::setDefaultUseMasterKey(true);
 ```
 
 ## Relations

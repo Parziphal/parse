@@ -2,7 +2,7 @@
 
 namespace Illuminate\Parse\Relations;
 
-use Illuminate\Parse\ParseModel;
+use Illuminate\Parse\Model;
 
 class BelongsTo extends Relation
 {
@@ -12,7 +12,7 @@ class BelongsTo extends Relation
 
     protected $childObject;
 
-    public function __construct($embeddedClass, $keyName, ParseModel $childObject)
+    public function __construct($embeddedClass, $keyName, Model $childObject)
     {
         $this->embeddedClass = $embeddedClass;
         $this->childObject = $childObject;

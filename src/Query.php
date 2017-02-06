@@ -184,14 +184,14 @@ class Query
             $where = $key;
 
             foreach ($where as $key => $value) {
-                if ($value instanceof ParseModel) {
+                if ($value instanceof Model) {
                     $value = $value->getParseObject ();
                 }
 
                 $this->parseQuery->equalTo ($key, $value);
             }
         } elseif (func_num_args () == 2) {
-            if ($operator instanceof ParseModel) {
+            if ($operator instanceof Model) {
                 $operator = $operator->getParseObject ();
             }
 
@@ -311,7 +311,7 @@ class Query
      * @param string $objectId
      * @param mixed $selectKeys
      *
-     * @return ParseModel|null
+     * @return Model|null
      */
     public function find($objectId, $selectKeys = null)
     {
@@ -327,7 +327,7 @@ class Query
      * @param string $objectId
      * @param mixed $selectKeys
      *
-     * @return ParseModel
+     * @return Model
      *
      * @throws ModelNotFoundException
      */
@@ -345,7 +345,7 @@ class Query
      * @param string $objectId
      * @param mixed $selectKeys
      *
-     * @return ParseModel
+     * @return Model
      */
     public function findOrNew($objectId, $selectKeys = null)
     {
@@ -365,7 +365,7 @@ class Query
      *
      * @param mixed $selectKeys
      *
-     * @return ParseModel|null
+     * @return Model|null
      */
     public function first($selectKeys = null)
     {
@@ -387,7 +387,7 @@ class Query
      * @param string $objectId
      * @param mixed $selectKeys
      *
-     * @return ParseModel
+     * @return Model
      *
      * @throws ModelNotFoundException
      */
@@ -412,7 +412,7 @@ class Query
      *
      * @param array $data
      *
-     * @return ParseModel
+     * @return Model
      */
     public function firstOrNew(array $data)
     {
@@ -431,7 +431,7 @@ class Query
      *
      * @param array $data
      *
-     * @return ParseModel
+     * @return Model
      */
     public function firstOrCreate(array $data)
     {
@@ -688,7 +688,7 @@ class Query
     }
 
     /**
-     * ParseModels are replaced for their ParseObjects. It also accepts any kind
+     * Models are replaced for their ParseObjects. It also accepts any kind
      * of traversable variable.
      *
      * @param  string $key
@@ -703,7 +703,7 @@ class Query
         }
 
         foreach ($values as $k => $value) {
-            if ($value instanceof ParseModel) {
+            if ($value instanceof Model) {
                 $values[$k] = $value->getParseObject ();
             }
         }

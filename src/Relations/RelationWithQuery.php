@@ -2,7 +2,7 @@
 
 namespace Illuminate\Parse\Relations;
 
-use Illuminate\Parse\ParseModel;
+use Illuminate\Parse\Model;
 use Illuminate\Parse\Query;
 
 abstract class RelationWithQuery extends Relation
@@ -10,11 +10,11 @@ abstract class RelationWithQuery extends Relation
     protected $query;
 
     /**
-     * @param ParseModel
+     * @param Model
      */
     protected $parentObject;
 
-    public function __construct(Query $query, ParseModel $parentObject)
+    public function __construct(Query $query, Model $parentObject)
     {
         $this->query = $query;
         $this->parentObject = $parentObject;
