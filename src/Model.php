@@ -2,6 +2,7 @@
 
 namespace Illuminate\Parse;
 
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
@@ -40,6 +41,27 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
      * @var string
      */
     const DELETED_AT = 'deletedAt';
+
+    /**
+     * Timestamp when object was created.
+     *
+     * @var \DateTime
+     */
+    private $createdAt;
+
+    /**
+     * Timestamp when object was last updated.
+     *
+     * @var \DateTime
+     */
+    private $updatedAt;
+
+    /**
+     * Timestamp when object was last deleted.
+     *
+     * @var \DateTime
+     */
+    private $deletedAt;
 
     protected static $parseClassName;
 
@@ -160,7 +182,29 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
 
     public function __get($key)
     {
-        return $this->get ($key);
+        if (method_exists($this, $key)) {
+            return call_user_func([$this, $key]);
+        }
+
+        switch ($key) {
+            case 'id':
+                return $this->id();
+                break;
+            case 'className':
+                return static::parseClassName();
+                break;
+            case static::CREATED_AT:
+                return $this->getCreatedAt();
+                break;
+            case static::UPDATED_AT:
+                return $this->getUpdatedAt();
+                break;
+            case static::DELETED_AT:
+                return $this->getDeletedAt();
+                break;
+            default:
+                return $this->get($key);
+        }
     }
 
     public function __set($key, $value)
@@ -229,10 +273,6 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
 
     public function get($key)
     {
-        if ($key == 'id') {
-            return $this->id ();
-        }
-
         if ($this->isRelation ($key)) {
             return $this->getRelationValue ($key);
         }
@@ -240,6 +280,52 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
         $value = $this->parseObject->get ($key);
 
         return $value;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getCreatedAt()
+    {
+        $createdAt = $this->createdAt;
+        if (! is_null($createdAt)) {
+            return $this->createCarbonFromDateTime($createdAt);
+        }
+        return $createdAt;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getUpdatedAt()
+    {
+        $updatedAt = $this->updatedAt;
+        if (! is_null($updatedAt)) {
+            return $this->createCarbonFromDateTime($updatedAt);
+        }
+        return $updatedAt;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getDeletedAt()
+    {
+        $updatedAt = $this->deletedAt;
+        if (! is_null($updatedAt)) {
+            return $this->createCarbonFromDateTime($updatedAt);
+        }
+        return $updatedAt;
+    }
+
+    /**
+     * @param $value
+     *
+     * @return Carbon
+     */
+    private function createCarbonFromDateTime(DateTime $value)
+    {
+        return Carbon::createFromTimestampUTC($value->getTimestamp());
     }
 
     public function getRelationValue($key)
