@@ -192,12 +192,6 @@ class Query
 
                 $this->parseQuery->equalTo ($key, $value);
             }
-        } elseif (func_num_args () == 2) {
-            if ($operator instanceof Model) {
-                $operator = $operator->getParseObject ();
-            }
-
-            $this->parseQuery->equalTo ($key, $operator);
         } else {
             if (!array_key_exists ($operator, self::OPERATORS)) {
                 throw new Exception("Invalid operator: " . $operator);

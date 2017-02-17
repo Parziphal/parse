@@ -99,7 +99,7 @@ abstract class BaseProvider implements UserProvider
         $class = $this->userClass;
         $username = $this->getUsernameFromCredentials ($credentials);
 
-        return $class::query (true)->whereUsername ($username)->whereOrEmail($username)->first ();
+        return $class::query (true)->where(['username' => $username])->orWhere(['email' => $username])->first ();
     }
 
     protected function retrieveByFacebook(array $credentials)
