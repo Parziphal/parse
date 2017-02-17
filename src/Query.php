@@ -20,9 +20,7 @@ class Query
         '>=' => 'greaterThanOrEqualTo',
         '<' => 'lessThan',
         '<=' => 'lessThanOrEqualTo',
-        'in' => 'containedIn',
-        '!in' => 'notContainedIn',
-        'like' => 'like'
+        'like' => 'regex'
     ];
 
     /**
@@ -204,6 +202,50 @@ class Query
     }
 
     /**
+     * Alias for containedIn.
+     *
+     * @param  string $key
+     * @param  mixed $values
+     *
+     * @return $this
+     */
+    public function whereIn($key, $values)
+    {
+        return $this->containedIn ($key, $values);
+    }
+
+    /**
+     * Alias for notContainedIn.
+     *
+     * @param  string $key
+     * @param  mixed $values
+     *
+     * @return $this
+     */
+    public function whereNotIn($key, $values)
+    {
+        return $this->notContainedIn($key, $values);
+    }
+
+    /**
+     * @param string $key
+     * @return $this
+     */
+    public function whereNull($key)
+    {
+        return $this->whereIn($key, null);
+    }
+
+    /**
+     * @param string $key
+     * @return $this
+     */
+    public function whereNotNull($key)
+    {
+        return $this->whereNotIn($key, null);
+    }
+
+    /**
      * ```
      * $query->orWhere($key, '=', $value);
      * $query->orWhere([$key => $value]);
@@ -228,10 +270,31 @@ class Query
      * @param string $value
      * @return $this
      */
-    public function like($key, $value)
+    public function regex($key, $value)
     {
-        $this->parseQuery->regex($key, $value);
+        $this->parseQuery->regex ($key, $value);
+
         return $this;
+    }
+
+    /**
+     * Add the without-trashed extension to the query.
+     *
+     * @return Query
+     */
+    public function withoutTrashed()
+    {
+        return $this->whereNull(Model::DELETED_AT);
+    }
+
+    /**
+     * Add the only-trashed extension to the query
+     *
+     * @return Query
+     */
+    public function onlyTrashed()
+    {
+        return $this->whereNotNull(Model::DELETED_AT);
     }
 
     /**
@@ -290,26 +353,6 @@ class Query
         return ($bool == 'or') ?
             $this->orWhere (Str::camel ($segment), '=', $parameters[$index]) :
             $this->where (Str::camel ($segment), '=', $parameters[$index]);
-    }
-
-    /**
-     * Alias for containedIn.
-     *
-     * @param  string $key
-     * @param  mixed $values
-     *
-     * @return $this
-     */
-    public function whereIn($key, $values)
-    {
-        return $this->containedIn ($key, $values);
-    }
-
-    public function whereNotExists($key)
-    {
-        $this->parseQuery->doesNotExist ($key);
-
-        return $this;
     }
 
     /**

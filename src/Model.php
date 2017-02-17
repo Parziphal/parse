@@ -6,17 +6,18 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Pluralizer;
-use JsonSerializable;
-use LogicException;
-use Parse\ParseFile;
-use Parse\ParseObject;
 use Illuminate\Parse\Relations\BelongsTo;
 use Illuminate\Parse\Relations\BelongsToMany;
 use Illuminate\Parse\Relations\HasMany;
 use Illuminate\Parse\Relations\HasManyArray;
 use Illuminate\Parse\Relations\Relation;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Pluralizer;
+use JsonSerializable;
+use LogicException;
+use Parse\ParseFile;
+use Parse\ParseObject;
 use ReflectionClass;
 
 abstract class Model implements Arrayable, Jsonable, JsonSerializable
@@ -163,28 +164,28 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
 
     public function __get($key)
     {
-        if (method_exists($this, $key)) {
-            return call_user_func([$this, $key]);
+        if (method_exists ($this, $key)) {
+            return call_user_func ([$this, $key]);
         }
 
         switch ($key) {
             case 'id':
-                return $this->id();
+                return $this->id ();
                 break;
             case 'className':
-                return static::parseClassName();
+                return static::parseClassName ();
                 break;
             case static::CREATED_AT:
-                return $this->getCreatedAt();
+                return $this->getCreatedAt ();
                 break;
             case static::UPDATED_AT:
-                return $this->getUpdatedAt();
+                return $this->getUpdatedAt ();
                 break;
-//            case static::DELETED_AT:
-//                return $this->getDeletedAt();
-//                break;
+            case static::DELETED_AT:
+                return $this->getDeletedAt ();
+                break;
             default:
-                return $this->get($key);
+                return $this->get ($key);
         }
     }
 
@@ -279,7 +280,8 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
      */
     public function getCreatedAt()
     {
-        return Carbon::instance($this->parseObject->getCreatedAt());
+        $createdAt = $this->parseObject->getCreatedAt ();
+        return (!$createdAt) ? null : Carbon::instance ($createdAt);
     }
 
     /**
@@ -287,15 +289,17 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
      */
     public function getUpdatedAt()
     {
-        return Carbon::instance($this->parseObject->getUpdatedAt());
+        $updatedAt = $this->parseObject->getUpdatedAt ();
+        return (!$updatedAt) ? null : Carbon::instance ($updatedAt);
     }
 
     /**
-     * @return DateTime|null
+     * @return Carbon|null
      */
     public function getDeletedAt()
     {
-        return NULL;
+        $deletedAt = $this->parseObject->getDeletedAt ();
+        return (!$deletedAt) ? null : Carbon::instance ($deletedAt);
     }
 
     public function getRelationValue($key)
@@ -337,12 +341,38 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * Soft-delete model instance.
+     */
+    public function delete()
+    {
+        $this->useMasterKey (true)->update ([self::DELETED_AT => new DateTime()]);
+    }
+
+    /**
+     * Restore a soft-deleted model instance.
+     */
+    public function unDelete()
+    {
+        $this->useMasterKey (true)->update ([self::DELETED_AT => null]);
+    }
+
+    /**
+     * Determine if the model instance has been soft-deleted.
+     *
+     * @return bool
+     */
+    public function deleted()
+    {
+        return !is_null ($this->{self::DELETED_AT});
+    }
+
+    /**
      * This will delete the object from the database. To delete a key,
      * use removeKey().
      *
      * @return void
      */
-    public function delete()
+    public function forceDelete()
     {
         $this->parseObject->destroy ($this->useMasterKey);
     }
@@ -501,19 +531,13 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
         $array['id'] = $object->getObjectId ();
 
         $createdAt = $object->getCreatedAt ();
-        if ($createdAt) {
-            $array[static::CREATED_AT] = $this->dateToString ($createdAt);
-        }
+        $array[static::CREATED_AT] = (!$createdAt) ? null : $this->dateToString ($createdAt);
 
         $updatedAt = $object->getUpdatedAt ();
-        if ($updatedAt) {
-            $array[static::UPDATED_AT] = $this->dateToString ($updatedAt);
-        }
+        $array[static::UPDATED_AT] = (!$updatedAt) ? null : $this->dateToString ($updatedAt);
 
-//        $deletedAt = $object->getDeletedAt ();
-//        if ($deletedAt) {
-//            $array[static::DELETED_AT] = $this->dateToString ($deletedAt);
-//        }
+        $deletedAt = $object->getDeletedAt ();
+        $array[static::DELETED_AT] = (!$deletedAt) ? null : $this->dateToString ($deletedAt);
 
         if ($object->getACL ()) {
             $array['ACL'] = $object->getACL ()->_encode ();
