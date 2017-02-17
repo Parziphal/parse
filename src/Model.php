@@ -22,46 +22,25 @@ use ReflectionClass;
 abstract class Model implements Arrayable, Jsonable, JsonSerializable
 {
     /**
-     * The name of the "created at" column.
+     * The name of the "createdAt" column.
      *
      * @var string
      */
     const CREATED_AT = 'createdAt';
 
     /**
-     * The name of the "updated at" column.
+     * The name of the "updatedAt" column.
      *
      * @var string
      */
     const UPDATED_AT = 'updatedAt';
 
     /**
-     * The name of the "deleted at" column.
+     * The name of the "deletedAt" column.
      *
      * @var string
      */
     const DELETED_AT = 'deletedAt';
-
-    /**
-     * Timestamp when object was created.
-     *
-     * @var \DateTime
-     */
-    private $createdAt;
-
-    /**
-     * Timestamp when object was last updated.
-     *
-     * @var \DateTime
-     */
-    private $updatedAt;
-
-    /**
-     * Timestamp when object was last deleted.
-     *
-     * @var \DateTime
-     */
-    private $deletedAt;
 
     protected static $parseClassName;
 
@@ -171,6 +150,8 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
     /**
      * Static calls are passed to a new query.
      *
+     * @param $method
+     * @param array $params
      * @return mixed
      */
     public static function __callStatic($method, array $params)
@@ -199,9 +180,9 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
             case static::UPDATED_AT:
                 return $this->getUpdatedAt();
                 break;
-            case static::DELETED_AT:
-                return $this->getDeletedAt();
-                break;
+//            case static::DELETED_AT:
+//                return $this->getDeletedAt();
+//                break;
             default:
                 return $this->get($key);
         }
@@ -238,6 +219,10 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
         $this->parseObject = clone $this->parseObject;
     }
 
+    /**
+     * @param $value
+     * @return $this
+     */
     public function useMasterKey($value)
     {
         $this->useMasterKey = (bool)$value;
@@ -251,6 +236,8 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
      *
      * @param string $key
      * @param mixed $value
+     * @return $this
+     * @throws \Exception
      */
     public function set($key, $value)
     {
@@ -271,6 +258,11 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
         return $this;
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     * @throws \Exception
+     */
     public function get($key)
     {
         if ($this->isRelation ($key)) {
@@ -283,49 +275,27 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * @return Carbon
+     * @return Carbon|null
      */
     public function getCreatedAt()
     {
-        $createdAt = $this->createdAt;
-        if (! is_null($createdAt)) {
-            return $this->createCarbonFromDateTime($createdAt);
-        }
-        return $createdAt;
+        return Carbon::instance($this->parseObject->getCreatedAt());
     }
 
     /**
-     * @return Carbon
+     * @return Carbon|null
      */
     public function getUpdatedAt()
     {
-        $updatedAt = $this->updatedAt;
-        if (! is_null($updatedAt)) {
-            return $this->createCarbonFromDateTime($updatedAt);
-        }
-        return $updatedAt;
+        return Carbon::instance($this->parseObject->getUpdatedAt());
     }
 
     /**
-     * @return Carbon
+     * @return DateTime|null
      */
     public function getDeletedAt()
     {
-        $updatedAt = $this->deletedAt;
-        if (! is_null($updatedAt)) {
-            return $this->createCarbonFromDateTime($updatedAt);
-        }
-        return $updatedAt;
-    }
-
-    /**
-     * @param $value
-     *
-     * @return Carbon
-     */
-    private function createCarbonFromDateTime(DateTime $value)
-    {
-        return Carbon::createFromTimestampUTC($value->getTimestamp());
+        return NULL;
     }
 
     public function getRelationValue($key)
@@ -467,6 +437,10 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
         return $this;
     }
 
+    /**
+     * @param bool|false $force
+     * @return $this
+     */
     public function fetch($force = false)
     {
         if (!$this->hasBeenFetched () || $force) {
@@ -476,6 +450,9 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function hasBeenFetched()
     {
         if (!self::$hasBeenFetchedProp) {
@@ -486,6 +463,9 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
         return self::$hasBeenFetchedProp->getValue ($this->parseObject);
     }
 
+    /**
+     * @return array
+     */
     public function toArray()
     {
         $array = $this->parseObjectToArray ($this->parseObject);
@@ -512,22 +492,28 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * @param ParseObject $object
      * @return array
      */
     public function parseObjectToArray(ParseObject $object)
     {
         $array = $object->getAllKeys ();
-        $array['objectId'] = $object->getObjectId ();
+        $array['id'] = $object->getObjectId ();
 
         $createdAt = $object->getCreatedAt ();
         if ($createdAt) {
-            $array['createdAt'] = $this->dateToString ($createdAt);
+            $array[static::CREATED_AT] = $this->dateToString ($createdAt);
         }
 
         $updatedAt = $object->getUpdatedAt ();
         if ($updatedAt) {
-            $array['updatedAt'] = $this->dateToString ($updatedAt);
+            $array[static::UPDATED_AT] = $this->dateToString ($updatedAt);
         }
+
+//        $deletedAt = $object->getDeletedAt ();
+//        if ($deletedAt) {
+//            $array[static::DELETED_AT] = $this->dateToString ($deletedAt);
+//        }
 
         if ($object->getACL ()) {
             $array['ACL'] = $object->getACL ()->_encode ();

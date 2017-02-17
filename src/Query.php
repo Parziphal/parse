@@ -21,6 +21,8 @@ class Query
         '<' => 'lessThan',
         '<=' => 'lessThanOrEqualTo',
         'in' => 'containedIn',
+        '!in' => 'notContainedIn',
+        'like' => 'like'
     ];
 
     /**
@@ -228,6 +230,17 @@ class Query
     }
 
     /**
+     * @param string $key
+     * @param string $value
+     * @return $this
+     */
+    public function like($key, $value)
+    {
+        $this->parseQuery->regex($key, $value);
+        return $this;
+    }
+
+    /**
      * Handles dynamic "where" clauses to the query.
      *
      * @param  string $method
@@ -281,8 +294,8 @@ class Query
         $bool = strtolower ($connector);
 
         return ($bool == 'or') ?
-            $this->orWhere (Str::snake ($segment), '=', $parameters[$index]) :
-            $this->where (Str::snake ($segment), '=', $parameters[$index]);
+            $this->orWhere (Str::camel ($segment), '=', $parameters[$index]) :
+            $this->where (Str::camel ($segment), '=', $parameters[$index]);
     }
 
     /**
@@ -384,7 +397,6 @@ class Query
      * Get the first record that matches the query
      * or throw an exception otherwise.
      *
-     * @param string $objectId
      * @param mixed $selectKeys
      *
      * @return Model
@@ -537,7 +549,7 @@ class Query
      * @param  string $column
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function latest($column = 'createdAt')
+    public function latest($column = Model::CREATED_AT)
     {
         return $this->orderBy ($column, 0);
     }
@@ -548,7 +560,7 @@ class Query
      * @param  string $column
      * @return \Illuminate\Database\Query\Builder|static
      */
-    public function oldest($column = 'createdAt')
+    public function oldest($column = Model::CREATED_AT)
     {
         return $this->orderBy ($column, 1);
     }
@@ -713,6 +725,32 @@ class Query
         return $this;
     }
 
+    /**
+     * Models are replaced for their ParseObjects. It also accepts any kind
+     * of traversable variable.
+     *
+     * @param  string $key
+     * @param  mixed $values
+     *
+     * @return $this
+     */
+    public function notContainedIn($key, $values)
+    {
+        if (!is_array ($values) && !$values instanceof Traversable) {
+            $values = [$values];
+        }
+
+        foreach ($values as $k => $value) {
+            if ($value instanceof Model) {
+                $values[$k] = $value->getParseObject ();
+            }
+        }
+
+        $this->parseQuery->notContainedIn($key, $values);
+
+        return $this;
+    }
+
     public function count()
     {
         return $this->parseQuery->count ($this->useMasterKey);
@@ -760,9 +798,7 @@ class Query
      */
     protected function createModels(array $objects)
     {
-        $className = $this->fullClassName;
         $models = [];
-
         foreach ($objects as $object) {
             $models[] = $this->createModel ($object);
         }
