@@ -30,7 +30,6 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
                 $this->addWhere ($query, $key, $extraValue);
             }
         }
-        dd ($query);
         return $query->count ();
     }
 
