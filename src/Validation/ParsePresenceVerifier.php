@@ -14,10 +14,11 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
 
     public function getCount($collection, $column, $value, $excludeId = null, $idColumn = null, array $extra = [])
     {
-        $query = $this->table ($collection)->where ($column, '=', $value);
+        $query = $this->table ($collection)->where ([$column => $value]);
 
         if (!is_null ($excludeId) && $excludeId != 'NULL') {
-            $query->where ($idColumn ?: 'id', '!=', $excludeId);
+            $idColumn = str_replace ('id', 'objectId', $idColumn);
+            $query->where ($idColumn, '!=', $excludeId);
         }
 
         foreach ($extra as $key => $extraValue) {
@@ -29,16 +30,12 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
                 $this->addWhere ($query, $key, $extraValue);
             }
         }
-
         return $query->count ();
     }
 
     public function getMultiCount($collection, $column, array $values, array $extra = [])
     {
-        /**
-         * FIXME: parse WHERE IN not work :/
-         */
-        $query = $this->table ($collection)->where ($column, "in", $values);
+        $query = $this->table ($collection)->whereIn ($column, $values);
 
         foreach ($extra as $key => $extraValue) {
             if ($extraValue instanceof Closure) {
@@ -49,7 +46,6 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
                 $this->addWhere ($query, $key, $extraValue);
             }
         }
-
         return $query->count ();
     }
 
@@ -64,13 +60,13 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
     protected function addWhere($query, $key, $extraValue)
     {
         if ($extraValue === 'NULL') {
-            $query->where ($key, '=', 'null');
+            $query->whereNull ($key);
         } elseif ($extraValue === 'NOT_NULL') {
-            $query->where ($key, '!=', 'null');
+            $query->whereNotNull ($key);
         } elseif (Str::startsWith ($extraValue, '!')) {
             $query->where ($key, '!=', mb_substr ($extraValue, 1));
         } else {
-            $query->where ($key, $extraValue);
+            $query->where ([$key => $extraValue]);
         }
     }
 

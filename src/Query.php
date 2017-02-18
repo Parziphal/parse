@@ -190,6 +190,8 @@ class Query
 
                 $this->parseQuery->equalTo ($key, $value);
             }
+        } else if ($key instanceof Closure) {
+            return $key($this);
         } else {
             if (!array_key_exists ($operator, self::OPERATORS)) {
                 throw new Exception("Invalid operator: " . $operator);
