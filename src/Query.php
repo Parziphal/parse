@@ -19,8 +19,7 @@ class Query
         '>' => 'greaterThan',
         '>=' => 'greaterThanOrEqualTo',
         '<' => 'lessThan',
-        '<=' => 'lessThanOrEqualTo',
-        'like' => 'regex'
+        '<=' => 'lessThanOrEqualTo'
     ];
 
     /**
@@ -274,6 +273,21 @@ class Query
     }
 
     /**
+     * Add a constraint to the query that requires a particular key's value to
+     * regex with the provided value.
+     *
+     * @param string $key
+     * @param string $value
+     * @return $this
+     */
+    public function whereLike($key, $value)
+    {
+        $this->parseQuery->regex ($key, $value);
+
+        return $this;
+    }
+
+    /**
      * ```
      * $query->orWhere($key, '=', $value);
      * $query->orWhere([$key => $value]);
@@ -291,18 +305,6 @@ class Query
         return $this->orQuery (function (Query $query) use ($key, $operator, $value) {
             $query->where ($key, $operator, $value);
         });
-    }
-
-    /**
-     * @param string $key
-     * @param string $value
-     * @return $this
-     */
-    public function regex($key, $value)
-    {
-        $this->parseQuery->regex ($key, $value);
-
-        return $this;
     }
 
     /**

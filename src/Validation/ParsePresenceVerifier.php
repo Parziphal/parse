@@ -17,19 +17,20 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
         $query = $this->table ($collection)->where ([$column => $value]);
 
         if (!is_null ($excludeId) && $excludeId != 'NULL') {
-            $idColumn = str_replace ('id', 'objectId', $idColumn);
+            $idColumn = ($idColumn != 'id') ? $idColumn : str_replace ('id', 'objectId', $idColumn);
             $query->where ($idColumn, '!=', $excludeId);
         }
 
         foreach ($extra as $key => $extraValue) {
             if ($extraValue instanceof Closure) {
-                $query->where (function ($query) use ($extraValue) {
+                $query->where (function (Query $query) use ($extraValue) {
                     $extraValue($query);
                 });
             } else {
                 $this->addWhere ($query, $key, $extraValue);
             }
         }
+        dd ($query);
         return $query->count ();
     }
 
@@ -39,7 +40,7 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
 
         foreach ($extra as $key => $extraValue) {
             if ($extraValue instanceof Closure) {
-                $query->where (function ($query) use ($extraValue) {
+                $query->where (function (Query $query) use ($extraValue) {
                     $extraValue($query);
                 });
             } else {
