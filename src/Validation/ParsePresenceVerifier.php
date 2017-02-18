@@ -4,9 +4,9 @@ namespace Illuminate\Parse\Validation;
 
 use Closure;
 use Illuminate\Console\AppNamespaceDetectorTrait;
+use Illuminate\Parse\Query;
 use Illuminate\Support\Str;
 use Illuminate\Validation\PresenceVerifierInterface;
-use Illuminate\Parse\Query;
 
 class ParsePresenceVerifier implements PresenceVerifierInterface
 {
@@ -38,7 +38,7 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
         /**
          * FIXME: parse WHERE IN not work :/
          */
-        $query = $this->table ($collection)->where($column, "in", $values);
+        $query = $this->table ($collection)->where ($column, "in", $values);
 
         foreach ($extra as $key => $extraValue) {
             if ($extraValue instanceof Closure) {

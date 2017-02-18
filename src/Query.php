@@ -224,7 +224,7 @@ class Query
      */
     public function whereNotIn($key, $values)
     {
-        return $this->notContainedIn($key, $values);
+        return $this->notContainedIn ($key, $values);
     }
 
     /**
@@ -233,7 +233,7 @@ class Query
      */
     public function whereNull($key)
     {
-        return $this->whereIn($key, null);
+        return $this->whereIn ($key, null);
     }
 
     /**
@@ -242,7 +242,33 @@ class Query
      */
     public function whereNotNull($key)
     {
-        return $this->whereNotIn($key, null);
+        return $this->whereNotIn ($key, null);
+    }
+
+    /**
+     * Add a constraint for finding objects that contain the given key.
+     *
+     * @param string $key
+     * @return $this
+     */
+    public function whereExists($key)
+    {
+        $this->parseQuery->exists($key);
+
+        return $this;
+    }
+
+    /**
+     * Add a constraint for finding objects that not contain the given key.
+     *
+     * @param string $key
+     * @return $this
+     */
+    public function whereNotExists($key)
+    {
+        $this->parseQuery->doesNotExist ($key);
+
+        return $this;
     }
 
     /**
@@ -284,7 +310,7 @@ class Query
      */
     public function withoutTrashed()
     {
-        return $this->whereNull(Model::DELETED_AT);
+        return $this->whereNull (Model::DELETED_AT);
     }
 
     /**
@@ -294,7 +320,7 @@ class Query
      */
     public function onlyTrashed()
     {
-        return $this->whereNotNull(Model::DELETED_AT);
+        return $this->whereNotNull (Model::DELETED_AT);
     }
 
     /**
@@ -783,7 +809,7 @@ class Query
             }
         }
 
-        $this->parseQuery->notContainedIn($key, $values);
+        $this->parseQuery->notContainedIn ($key, $values);
 
         return $this;
     }

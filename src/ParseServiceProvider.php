@@ -3,15 +3,15 @@
 namespace Illuminate\Parse;
 
 use Illuminate\Foundation\Application as LaravelApplication;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\ServiceProvider;
-use Laravel\Lumen\Application as LumenApplication;
-use Parse\ParseClient;
 use Illuminate\Parse\Auth\Providers\AnyUserProvider;
 use Illuminate\Parse\Auth\Providers\FacebookUserProvider;
 use Illuminate\Parse\Auth\Providers\UserProvider;
 use Illuminate\Parse\Console\ModelMakeCommand;
 use Illuminate\Parse\Validation\ParsePresenceVerifier;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\ServiceProvider;
+use Laravel\Lumen\Application as LumenApplication;
+use Parse\ParseClient;
 
 class ParseServiceProvider extends ServiceProvider
 {

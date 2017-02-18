@@ -5,7 +5,6 @@ namespace Illuminate\Parse\Auth\Providers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Parse\ParseException;
-use Illuminate\Parse\Query;
 
 abstract class BaseProvider implements UserProvider
 {
@@ -99,7 +98,7 @@ abstract class BaseProvider implements UserProvider
         $class = $this->userClass;
         $username = $this->getUsernameFromCredentials ($credentials);
 
-        return $class::query (true)->where(['username' => $username])->orWhere(['email' => $username])->first ();
+        return $class::query (true)->where (['username' => $username])->orWhere (['email' => $username])->first ();
     }
 
     protected function retrieveByFacebook(array $credentials)

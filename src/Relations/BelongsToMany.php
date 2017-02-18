@@ -2,8 +2,8 @@
 
 namespace Illuminate\Parse\Relations;
 
-use Illuminate\Support\Collection;
 use Illuminate\Parse\Model;
+use Illuminate\Support\Collection;
 
 class BelongsToMany extends Relation
 {
