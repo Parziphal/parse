@@ -9,7 +9,7 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 * Enabled to work with Parse's relations.
 * User authentication using username/password combinations and/or with Facebook.
 * Command to create Models (`parse:model Foo`).
-* Command to create scaffold basic login and registration views and routes (`parse:auth Foo`).
+* Command to create scaffold basic login and registration views and routes (`parse:auth`).
 
 ## Setup Parse server
 
