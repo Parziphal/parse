@@ -25,6 +25,9 @@ trait SendsPasswordResetEmails
      */
     public function sendResetLinkEmail(Request $request)
     {
+        /**
+         * @var \App\User $userClass
+         */
         $userClass = $this->userClass ();
         $this->validate ($request, $userClass::FORGOT_RULES);
 
@@ -60,6 +63,9 @@ trait SendsPasswordResetEmails
      */
     protected function sendResetLinkFailedResponse(Request $request, $response)
     {
+        /**
+         * @var \App\User $userClass
+         */
         $userClass = $this->userClass ();
         return back ()->withErrors (
             [$userClass::USERNAME => trans ($response)]
@@ -79,7 +85,7 @@ trait SendsPasswordResetEmails
     /**
      * Get user model class
      *
-     * @return mixed
+     * @return \App\User
      */
     public function userClass()
     {

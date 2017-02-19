@@ -25,6 +25,13 @@ class UserModel extends Model
      * @param ParseUser|array $data
      * @param bool $useMasterKey
      */
+
+    /**
+     * UserModel constructor.
+     * @param null $data
+     * @param null $useMasterKey
+     * @throws \Exception
+     */
     public function __construct($data = null, $useMasterKey = null)
     {
         if ($data != null && !$data instanceof ParseUser && !is_array ($data)) {
@@ -70,6 +77,9 @@ class UserModel extends Model
             $useMasterKey = static::$defaultUseMasterKey;
         }
 
+        /**
+         * @var ParseUser $model
+         */
         $model = new static($data, $useMasterKey);
         $model->signUp ();
 
@@ -78,7 +88,7 @@ class UserModel extends Model
 
     public function linkWithFacebook($id, $accessToken, $expirationDate = null, $useMasterKey = false)
     {
-        return new static($this->parseObject->loginWithAnonymous (
+        return new static($this->parseObject->linkWithFacebook (
             $id,
             $accessToken,
             $expirationDate,

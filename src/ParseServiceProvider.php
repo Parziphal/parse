@@ -7,6 +7,7 @@ use Illuminate\Parse\Auth\Passwords\PasswordBrokerManager;
 use Illuminate\Parse\Auth\Providers\AnyUserProvider;
 use Illuminate\Parse\Auth\Providers\FacebookUserProvider;
 use Illuminate\Parse\Auth\Providers\UserProvider;
+use Illuminate\Parse\Console\AuthMakeCommand;
 use Illuminate\Parse\Console\ModelMakeCommand;
 use Illuminate\Parse\Validation\ParsePresenceVerifier;
 use Illuminate\Support\Facades\Auth;
@@ -51,14 +52,23 @@ class ParseServiceProvider extends ServiceProvider
     protected function registerCommands()
     {
         $this->registerModelMakeCommand ();
+        $this->registerAuthMakeCommand ();
 
         $this->commands ('command.parse.model.make');
+        $this->commands ('command.parse.auth.make');
     }
 
     protected function registerModelMakeCommand()
     {
         $this->app->singleton ('command.parse.model.make', function ($app) {
             return new ModelMakeCommand($app['files']);
+        });
+    }
+
+    protected function registerAuthMakeCommand()
+    {
+        $this->app->singleton ('command.parse.auth.make', function () {
+            return new AuthMakeCommand;
         });
     }
 
@@ -87,7 +97,7 @@ class ParseServiceProvider extends ServiceProvider
             return new AnyUserProvider(config ('auth.providers.users.model'));
         });
 
-        $this->app->extend ('validation.presence', function ($abstract, $app) {
+        $this->app->extend ('validation.presence', function () {
             return new ParsePresenceVerifier();
         });
 

@@ -3,12 +3,9 @@
 namespace Illuminate\Parse\Auth\Passwords;
 
 use Illuminate\Parse\Auth\Notifications\ResetPassword as ResetPasswordNotification;
-use Illuminate\Notifications\Notifiable;
 
 trait CanResetPassword
 {
-    use Notifiable;
-
     /**
      * Get the e-mail address where password reset links are sent.
      *

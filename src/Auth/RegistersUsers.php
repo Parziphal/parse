@@ -43,7 +43,7 @@ trait RegistersUsers
     /**
      * Get user model class
      *
-     * @return mixed
+     * @return \App\User
      */
     public function userClass()
     {
@@ -58,8 +58,11 @@ trait RegistersUsers
      */
     protected function validator(array $data)
     {
-        $class = $this->userClass ();
-        return Validator::make ($data, $class::REGISTER_RULES);
+        /**
+         * @var \App\User $userClass
+         */
+        $userClass = $this->userClass ();
+        return Validator::make ($data, $userClass::REGISTER_RULES);
     }
 
     /**
@@ -70,18 +73,21 @@ trait RegistersUsers
      */
     protected function create(array $data)
     {
-        $class = $this->userClass ();
+        /**
+         * @var \App\User $userClass
+         */
+        $userClass = $this->userClass ();
 
         $user = [];
-        foreach ($class::REGISTER_RULES as $key => $value) {
+        foreach ($userClass::REGISTER_RULES as $key => $value) {
             $user[$key] = $data[$key];
         }
 
-        $user['email'] = $user[$class::USERNAME] . '@' . config ('parse.domain');
+        $user['email'] = $user[$userClass::USERNAME] . '@' . config ('parse.domain');
         $user['emailVerified'] = false;
-        $user[$class::DELETED_AT] = null;
+        $user[$userClass::DELETED_AT] = null;
 
-        return $class::create ($user);
+        return $userClass::create ($user);
     }
 
     /**

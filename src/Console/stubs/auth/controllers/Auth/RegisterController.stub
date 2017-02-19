@@ -1,0 +1,39 @@
+<?php
+
+namespace DummyNamespaceHttp\Controllers\Auth;
+
+use Illuminate\Parse\Auth\RegistersUsers;
+use DummyNamespaceHttp\Controllers\Controller;
+
+class RegisterController extends Controller
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Register Controller
+    |--------------------------------------------------------------------------
+    |
+    | This controller handles the registration of new users as well as their
+    | validation and creation. By default this controller uses a trait to
+    | provide this functionality without requiring any additional code.
+    |
+    */
+
+    use RegistersUsers;
+
+    /**
+     * Where to redirect users after login / registration.
+     *
+     * @var string
+     */
+    protected $redirectTo = '/home';
+
+    /**
+     * Create a new controller instance.
+     */
+    public function __construct()
+    {
+        $this->middleware('guest');
+    }
+
+
+}

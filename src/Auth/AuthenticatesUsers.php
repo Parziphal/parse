@@ -84,6 +84,9 @@ trait AuthenticatesUsers
      */
     public function logout(Request $request)
     {
+        /**
+         * @var \Parse\ParseUser $userClass
+         */
         $userClass = $this->userClass ();
         $userClass::logOut ();
 
@@ -98,7 +101,7 @@ trait AuthenticatesUsers
     /**
      * Get user model class
      *
-     * @return mixed
+     * @return \App\User
      */
     public function userClass()
     {
@@ -113,6 +116,9 @@ trait AuthenticatesUsers
      */
     protected function validateLogin(Request $request)
     {
+        /**
+         * @var \App\User $userClass
+         */
         $userClass = $this->userClass ();
         $this->validate ($request, $userClass::LOGIN_RULES);
     }
@@ -180,6 +186,9 @@ trait AuthenticatesUsers
     protected function loginWithFacebook(Request $request)
     {
         try {
+            /**
+             * @var \Parse\ParseUser $userClass
+             */
             $userClass = $this->userClass ();
             return $userClass::logInWithFacebook ($request->id, $request->access_token);
         } catch (ParseException $e) {
@@ -217,6 +226,9 @@ trait AuthenticatesUsers
      */
     protected function username()
     {
+        /**
+         * @var \App\User $userClass
+         */
         $userClass = $this->userClass ();
         return $userClass::USERNAME;
     }

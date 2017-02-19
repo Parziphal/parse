@@ -26,6 +26,9 @@ abstract class BaseProvider implements UserProvider
      */
     public function retrieveById($identifier)
     {
+        /**
+         * @var \Illuminate\Parse\Model $class
+         */
         $class = $this->userClass;
 
         return $class::query (true)->find ($identifier) ?: null;
@@ -40,6 +43,9 @@ abstract class BaseProvider implements UserProvider
      */
     public function retrieveByToken($identifier, $token)
     {
+        /**
+         * @var \Illuminate\Parse\Model $class
+         */
         $class = $this->userClass;
 
         return $class::query (true)->where ([
@@ -57,7 +63,10 @@ abstract class BaseProvider implements UserProvider
      */
     public function updateRememberToken(Authenticatable $user, $token)
     {
-        $user->update (['rememberToken' => $token], true);
+        /**
+         * @var \Illuminate\Parse\Model $user
+         */
+        $user->update (['rememberToken' => $token]);
     }
 
     protected function validatePassword(Authenticatable $user, array $credentials)
@@ -65,6 +74,9 @@ abstract class BaseProvider implements UserProvider
         $username = $this->getUsernameFromCredentials ($credentials);
 
         try {
+            /**
+             * @var \Parse\ParseUser $user
+             */
             $user->logIn ($username, $credentials['password']);
         } catch (ParseException $e) {
             return false;
@@ -95,6 +107,9 @@ abstract class BaseProvider implements UserProvider
 
     protected function retrieveByUsername(array $credentials)
     {
+        /**
+         * @var \Illuminate\Parse\Model $class
+         */
         $class = $this->userClass;
         $username = $this->getUsernameFromCredentials ($credentials);
 
@@ -103,6 +118,9 @@ abstract class BaseProvider implements UserProvider
 
     protected function retrieveByFacebook(array $credentials)
     {
+        /**
+         * @var \Illuminate\Parse\Model $class
+         */
         $class = $this->userClass;
 
         // Check if the user exists first. If we call logInWithFacebook right away,
@@ -114,6 +132,9 @@ abstract class BaseProvider implements UserProvider
         }
 
         try {
+            /**
+             * @var \Parse\ParseUser $class
+             */
             return $class::logInWithFacebook ($credentials['id'], $credentials['access_token']);
         } catch (ParseException $e) {
             return null;

@@ -9,6 +9,7 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 * Enabled to work with Parse's relations.
 * User authentication using username/password combinations and/or with Facebook.
 * Command to create Models (`parse:model Foo`).
+* Command to create scaffold basic login and registration views and routes (`parse:auth Foo`).
 
 ## Setup Parse server
 
@@ -48,8 +49,9 @@ The model would look like this:
 ```php
    
 namespace App;
-   
+
 use Illuminate\Parse\Auth\UserModel;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * App\User
@@ -65,6 +67,8 @@ use Illuminate\Parse\Auth\UserModel;
  */
 class User extends UserModel
 {
+    use Notifiable;
+
     const REGISTER_RULES = [
         'name' => 'required|max:255',
         'username' => 'required|min:6|max:255|unique:_User',

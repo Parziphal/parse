@@ -24,9 +24,12 @@ trait ResetsPasswords
      */
     public function showResetForm(Request $request, $token = null)
     {
-        $class = $this->userClass ();
+        /**
+         * @var \App\User $userClass
+         */
+        $userClass = $this->userClass ();
         return view ('auth.passwords.reset')->with (
-            ['token' => $token, $class::USERNAME => $request->username]
+            ['token' => $token, $userClass::USERNAME => $request->username]
         );
     }
 
@@ -38,8 +41,11 @@ trait ResetsPasswords
      */
     public function reset(Request $request)
     {
-        $class = $this->userClass ();
-        $this->validate ($request, $class::RESET_RULES, $this->validationErrorMessages ());
+        /**
+         * @var \App\User $userClass
+         */
+        $userClass = $this->userClass ();
+        $this->validate ($request, $userClass::RESET_RULES, $this->validationErrorMessages ());
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
@@ -77,9 +83,12 @@ trait ResetsPasswords
      */
     protected function credentials(Request $request)
     {
-        $class = $this->userClass ();
+        /**
+         * @var \App\User $userClass
+         */
+        $userClass = $this->userClass ();
         return $request->only (
-            $class::USERNAME, 'password', 'password_confirmation', 'token'
+            $userClass::USERNAME, 'password', 'password_confirmation', 'token'
         );
     }
 
@@ -121,16 +130,19 @@ trait ResetsPasswords
      */
     protected function sendResetFailedResponse(Request $request, $response)
     {
-        $class = $this->userClass ();
+        /**
+         * @var \App\User $userClass
+         */
+        $userClass = $this->userClass ();
         return redirect ()->back ()
-            ->withInput ($request->only ($class::USERNAME))
-            ->withErrors ([$class::USERNAME => trans ($response)]);
+            ->withInput ($request->only ($userClass::USERNAME))
+            ->withErrors ([$userClass::USERNAME => trans ($response)]);
     }
 
     /**
      * Get user model class
      *
-     * @return mixed
+     * @return \App\User
      */
     public function userClass()
     {

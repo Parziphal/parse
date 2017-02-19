@@ -35,9 +35,8 @@ class PasswordBroker implements PasswordBrokerContract
     /**
      * Create a new password broker instance.
      *
-     * @param  \Illuminate\Auth\Passwords\TokenRepositoryInterface  $tokens
+     * @param  \Illuminate\Parse\Auth\Passwords\TokenRepositoryInterface  $tokens
      * @param  \Illuminate\Contracts\Auth\UserProvider  $users
-     * @return void
      */
     public function __construct(TokenRepositoryInterface $tokens,
                                 UserProvider $users)
@@ -232,7 +231,7 @@ class PasswordBroker implements PasswordBrokerContract
     /**
      * Get the password reset token repository implementation.
      *
-     * @return \Illuminate\Auth\Passwords\TokenRepositoryInterface
+     * @return \Illuminate\Parse\Auth\Passwords\TokenRepositoryInterface
      */
     public function getRepository()
     {

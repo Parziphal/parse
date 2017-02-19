@@ -3,8 +3,20 @@
 namespace DummyNamespace;
 
 use Illuminate\Parse\Model;
+use Illuminate\Notifications\Notifiable;
 
+/**
+ * DummyNamespace\DummyClass
+ *
+ * @property string $id
+ * @property \Carbon\Carbon $createdAt
+ * @property \Carbon\Carbon $updatedAt
+ * @property \Carbon\Carbon $deletedAt
+ */
 class DummyClass extends Model
 {
-    
+    use Notifiable;
+
+    // do Parse magic
+
 }
