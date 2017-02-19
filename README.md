@@ -14,7 +14,7 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 
 Set your configuration in `config.json`
 
-It's important to specify this setting: "userSensitiveFields": ["email", "username"]
+It's important to specify this setting: `"userSensitiveFields": ["email", "username"]`
 
 ## Setup
 
@@ -92,7 +92,7 @@ class User extends UserModel
 
 ## Log in with Parse
 
-In `config/auth.php`, set your desired users driver (see below), and set the class of the User model you'd like to use (it must extend from `Illuminate\Parse\UserModel`). You could just make the default `App\User` class to extend `Illuminate\Parse\Auth\UserModel`, which is a User class ready to be used for authentication.
+In `config/auth.php`, set your desired users driver (see below).
 
 The config would look like this:
 
@@ -103,6 +103,14 @@ The config would look like this:
         'model'  => App\User::class,
     ],
 ],
+    
+'passwords' => [
+    'users' => [
+        'provider' => 'users',
+        'table' => 'PasswordResets',
+        'expire' => 60,
+    ],
+]
 ```
 
 There are 3 users providers available:
