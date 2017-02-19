@@ -3,15 +3,13 @@
 namespace Illuminate\Parse\Validation;
 
 use Closure;
-use Illuminate\Console\AppNamespaceDetectorTrait;
 use Illuminate\Parse\Query;
 use Illuminate\Support\Str;
 use Illuminate\Validation\PresenceVerifierInterface;
+use Illuminate\Container\Container;
 
 class ParsePresenceVerifier implements PresenceVerifierInterface
 {
-    use AppNamespaceDetectorTrait;
-
     public function getCount($collection, $column, $value, $excludeId = null, $idColumn = null, array $extra = [])
     {
         $query = $this->table ($collection)->where ([$column => $value]);
@@ -68,6 +66,14 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
         } else {
             $query->where ([$key => $extraValue]);
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getAppNamespace()
+    {
+        return Container::getInstance()->getNamespace();
     }
 
     /**

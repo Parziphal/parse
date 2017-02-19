@@ -2,12 +2,11 @@
 
 namespace Illuminate\Parse\Console;
 
-use Illuminate\Console\AppNamespaceDetectorTrait;
 use Illuminate\Console\Command;
+use Illuminate\Container\Container;
 
 class AuthMakeCommand extends Command
 {
-    use AppNamespaceDetectorTrait;
 
     /**
      * The name and signature of the console command.
@@ -112,6 +111,14 @@ class AuthMakeCommand extends Command
                 base_path ('resources/views/' . $value)
             );
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getAppNamespace()
+    {
+        return Container::getInstance()->getNamespace();
     }
 
     /**

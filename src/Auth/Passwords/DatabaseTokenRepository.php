@@ -3,15 +3,14 @@
 namespace Illuminate\Parse\Auth\Passwords;
 
 use Carbon\Carbon;
-use Illuminate\Console\AppNamespaceDetectorTrait;
 use Illuminate\Parse\Model;
 use Illuminate\Parse\Query;
 use Illuminate\Support\Str;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
 class DatabaseTokenRepository implements TokenRepositoryInterface
 {
-    use AppNamespaceDetectorTrait;
     /**
      * The token database table.
      *
@@ -149,6 +148,14 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
     public function createNewToken()
     {
         return hash_hmac('sha256', Str::random(40), $this->hashKey);
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getAppNamespace()
+    {
+        return Container::getInstance()->getNamespace();
     }
 
     /**
