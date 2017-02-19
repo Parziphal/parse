@@ -27,4 +27,8 @@ return [
      */
     'mount_path' => env ('PARSE_MOUNT_PATH', '/parse'),
 
+    /**
+     * Domain
+     */
+    'domain' => 'example.com',
 ];

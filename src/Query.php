@@ -254,7 +254,7 @@ class Query
      */
     public function whereExists($key)
     {
-        $this->parseQuery->exists($key);
+        $this->parseQuery->exists ($key);
 
         return $this;
     }
@@ -524,6 +524,56 @@ class Query
     }
 
     /**
+     * @param array $data
+     * @return Model
+     */
+    public function insert(array $data)
+    {
+        $class = $this->fullClassName;
+
+        /**
+         * @var Model $model
+         */
+        $model = new $class($data, $this->useMasterKey);
+        $model->save ();
+
+        return $model;
+    }
+
+    public function update(array $data)
+    {
+        /**
+         * @FIXME need batch
+         */
+        $this->each (50, function ($model) use ($data) {
+            /**
+             * @var Model $model
+             */
+            $model->update ($data);
+        });
+    }
+
+    /**
+     * @param bool|true $softDelete
+     */
+    public function delete($softDelete = true)
+    {
+        /**
+         * @FIXME need batch
+         */
+        $this->each (50, function ($model) use ($softDelete) {
+            /**
+             * @var Model $model
+             */
+            if ($softDelete) {
+                $model->delete ();
+            } else {
+                $model->forceDelete ();
+            }
+        });
+    }
+
+    /**
      * Executes the query and returns its results.
      *
      * @param string|string[] $selectKeys
@@ -599,9 +649,10 @@ class Query
         return $this;
     }
 
-    public function orderBy($key, $order = 1)
+    public function orderBy($key, $order = 'asc')
     {
-        if ($order == 1) {
+        $order = strtolower($order);
+        if ($order == 'asc') {
             $this->parseQuery->ascending ($key);
         } else {
             $this->parseQuery->descending ($key);
@@ -618,7 +669,7 @@ class Query
      */
     public function latest($column = Model::CREATED_AT)
     {
-        return $this->orderBy ($column, 0);
+        return $this->orderBy ($column, 'desc');
     }
 
     /**
@@ -629,7 +680,7 @@ class Query
      */
     public function oldest($column = Model::CREATED_AT)
     {
-        return $this->orderBy ($column, 1);
+        return $this->orderBy ($column);
     }
 
     /**
@@ -721,6 +772,24 @@ class Query
         } while ($countResults == $count);
 
         return true;
+    }
+
+    /**
+     * Each the result of the query.
+     *
+     * @param  int $count
+     * @param  callable $callback
+     * @return bool
+     */
+    public function each($count, callable $callback)
+    {
+        return $this->chunk ($count, function ($items) use ($callback) {
+            foreach ($items as $item) {
+                if (call_user_func ($callback, $item) === false) {
+                    return false;
+                }
+            }
+        });
     }
 
     /**

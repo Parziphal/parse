@@ -71,16 +71,6 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
     }
 
     /**
-     * Get application namespace
-     *
-     * @return string
-     */
-    protected function getNamespace()
-    {
-        return $this->getAppNamespace ();
-    }
-
-    /**
      * Get a query builder for the given table.
      *
      * @param string $table
@@ -88,7 +78,7 @@ class ParsePresenceVerifier implements PresenceVerifierInterface
      */
     protected function table($table)
     {
-        $className = $this->getNamespace () . $this->removePrefix ($table, "_");
+        $className = $this->getAppNamespace () . $this->removePrefix ($table, "_");
         return new Query($table, $className);
     }
 

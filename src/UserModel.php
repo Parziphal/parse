@@ -59,6 +59,10 @@ class UserModel extends Model
 
     /**
      * In order to create ParseUsers we have to call signUp instead of save.
+     *
+     * @param $data
+     * @param null $useMasterKey
+     * @return $this
      */
     public static function create($data, $useMasterKey = null)
     {

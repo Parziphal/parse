@@ -99,8 +99,11 @@ abstract class Model implements Arrayable, Jsonable, JsonSerializable
             $useMasterKey = static::$defaultUseMasterKey;
         }
 
-        $model = new static($data, $useMasterKey);
+        if (!isset($data[static::DELETED_AT])) {
+            $data[static::DELETED_AT] = null;
+        }
 
+        $model = new static($data, $useMasterKey);
         $model->save ();
 
         return $model;

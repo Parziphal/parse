@@ -1,6 +1,6 @@
 # Laravel Parse
 
-This library pretends to make Parse usable in a Eloquent-like manner. For Laravel 5.2+.
+This library pretends to make Parse usable in a Eloquent-like manner. For Laravel 5.3+.
 
 ## Features
 
@@ -9,6 +9,12 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 * Enabled to work with Parse's relations.
 * User authentication using username/password combinations and/or with Facebook.
 * Command to create Models (`parse:model Foo`).
+
+## Setup Parse server
+
+Set your configuration in `config.json`
+
+It's important to specify this setting: "userSensitiveFields": ["email", "username"]
 
 ## Setup
 
@@ -33,6 +39,57 @@ Set your configuration in `config/parse.php`, or in your `.env` file by setting 
     PARSE_SERVER_URL - Server URL (e.g. http://127.0.0.1:1337)
     PARSE_MOUNT_PATH - Server mount path (e.g. /parse)
 
+Create a model PasswordResets, : `parse:model PasswordResets`
+
+## User model
+
+The model would look like this:
+
+```php
+   
+namespace App;
+   
+use Illuminate\Parse\Auth\UserModel;
+
+/**
+ * App\User
+ *
+ * @property string         $name
+ * @property string         $username
+ * @property string         $email
+ * @property string         $password
+ * @property bool           $emailVerified
+ * @property \Carbon\Carbon $createdAt
+ * @property \Carbon\Carbon $updatedAt
+ * @property \Carbon\Carbon $deletedAt
+ */
+class User extends UserModel
+{
+    const REGISTER_RULES = [
+        'name' => 'required|max:255',
+        'username' => 'required|min:6|max:255|unique:_User',
+        'password' => 'required|min:8|confirmed',
+    ];
+
+    const LOGIN_RULES = [
+        'username' => 'required|min:6',
+        'password' => 'required'
+    ];
+
+    const FORGOT_RULES = [
+        'username' => 'required|min:6'
+    ];
+
+    const RESET_RULES = [
+        'token' => 'required',
+        'username' => 'required|min:6',
+        'password' => 'required|confirmed|min:8',
+    ];
+
+    const USERNAME = 'username';
+}
+```
+
 ## Log in with Parse
 
 In `config/auth.php`, set your desired users driver (see below), and set the class of the User model you'd like to use (it must extend from `Illuminate\Parse\UserModel`). You could just make the default `App\User` class to extend `Illuminate\Parse\Auth\UserModel`, which is a User class ready to be used for authentication.
@@ -42,7 +99,7 @@ The config would look like this:
 ```php
 'providers' => [
     'users' => [
-        'driver' => 'parse',
+        'driver' => 'parse-any',
         'model'  => App\User::class,
     ],
 ],
@@ -54,28 +111,19 @@ There are 3 users providers available:
 * `parse-facebook` which requires users to identify using their Facebook account
 * `parse-any` which lets users authenticate with either username/password or Facebook
 
-You can use the `Illuminate\Parse\Auth\AuthenticatesWithFacebook` trait in your auth controller (`App\Http\Controllers\Auth\AuthController` by default). The trait has methods to handle Facebook authentication/registration. Just bind them to a route and you're ready to go.
+You can use the `Illuminate\Parse\Auth\AuthenticatesUsers` trait in your auth controller (`App\Http\Controllers\Auth\AuthController` by default). The trait has methods to handle Facebook authentication/registration. Just bind them to a route and you're ready to go.
 
-Note that the trait can respond in two ways: with a redirect, or with JSON. The JSON response can be configured:
+## Registration with Parse
 
-```php
-// Interface of Illuminate\Parse\Auth\AuthenticatesWithFacebook
-// The *Api methods respond with $apiResponse.
-trait AuthenticatesWithFacebook
-{
-    protected $apiResponse = ['ok' => true];
+You can use the `Illuminate\Parse\Auth\RegistersUsers` trait in your register controller (`App\Http\Controllers\Auth\RegisterController` by default).
 
-    public function logInOrRegisterWithFacebookApi(Request $request);
+## Forgot password with Parse
 
-    public function logInOrRegisterWithFacebookRedirect(Request $request);
+You can use the `Illuminate\Parse\Auth\SendsPasswordResetEmails` trait in your forgot password controller (`App\Http\Controllers\Auth\ForgotPasswordController` by default).
 
-    public function registerWithFacebookRedirect(Request $request);
+## Reset password in with Parse
 
-    public function registerWithFacebookApi(Request $request);
-
-    public function registerAny(Request $request);
-}
-```
+You can use the `Illuminate\Parse\Auth\ResetsPasswords` trait in your reset password controller (`App\Http\Controllers\Auth\ResetPasswordController` by default).
 
 ## Models
 
@@ -126,10 +174,10 @@ $posts = Post::where([
     'creator' => $user,
     'title' => $title
   ])
-  ->containedIn('foo', $foos)
+  ->whereIn('foo', $foos)
   ->get();
 
-$post = Post::where($data)->firstOrCreate();
+$post = Post::firstOrCreate($data);
 ```
 
 ## Using Master Key
@@ -172,6 +220,7 @@ Please check the tests for examples.
 
 * GrahamCampbell's [Laravel-Parse](https://github.com/GrahamCampbell/Laravel-Parse/)
 * HipsterJazzbo's [LaraParse](https://github.com/HipsterJazzbo/LaraParse)
+* Parziphal [parse](https://github.com/Parziphal/parse)
 
 ## License
 

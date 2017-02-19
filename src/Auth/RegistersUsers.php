@@ -77,7 +77,10 @@ trait RegistersUsers
             $user[$key] = $data[$key];
         }
 
+        $user['email'] = $user[$class::USERNAME] . '@' . config ('parse.domain');
         $user['emailVerified'] = false;
+        $user[$class::DELETED_AT] = null;
+
         return $class::create ($user);
     }
 

@@ -25,13 +25,14 @@ trait SendsPasswordResetEmails
      */
     public function sendResetLinkEmail(Request $request)
     {
-        $this->validate ($request, ['email' => 'required|email']);
+        $userClass = $this->userClass ();
+        $this->validate ($request, $userClass::FORGOT_RULES);
 
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
         $response = $this->broker ()->sendResetLink (
-            $request->only ('email')
+            $request->only ($userClass::USERNAME)
         );
 
         return $response == Password::RESET_LINK_SENT
@@ -59,8 +60,9 @@ trait SendsPasswordResetEmails
      */
     protected function sendResetLinkFailedResponse(Request $request, $response)
     {
+        $userClass = $this->userClass ();
         return back ()->withErrors (
-            ['email' => trans ($response)]
+            [$userClass::USERNAME => trans ($response)]
         );
     }
 
@@ -73,4 +75,15 @@ trait SendsPasswordResetEmails
     {
         return Password::broker ();
     }
+
+    /**
+     * Get user model class
+     *
+     * @return mixed
+     */
+    public function userClass()
+    {
+        return config ('auth.providers.users.model');
+    }
+
 }

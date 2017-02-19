@@ -3,6 +3,7 @@
 namespace Illuminate\Parse;
 
 use Illuminate\Foundation\Application as LaravelApplication;
+use Illuminate\Parse\Auth\Passwords\PasswordBrokerManager;
 use Illuminate\Parse\Auth\Providers\AnyUserProvider;
 use Illuminate\Parse\Auth\Providers\FacebookUserProvider;
 use Illuminate\Parse\Auth\Providers\UserProvider;
@@ -86,8 +87,12 @@ class ParseServiceProvider extends ServiceProvider
             return new AnyUserProvider(config ('auth.providers.users.model'));
         });
 
-        $this->app->extend ('validation.presence', function () {
+        $this->app->extend ('validation.presence', function ($abstract, $app) {
             return new ParsePresenceVerifier();
+        });
+
+        $this->app->extend('auth.password', function ($abstract, $app) {
+            return new PasswordBrokerManager($app);
         });
     }
 
