@@ -134,7 +134,6 @@ class Query
     public function useMasterKey($value)
     {
         $this->useMasterKey = $value;
-
         return $this;
     }
 
@@ -198,7 +197,6 @@ class Query
 
             call_user_func ([$this, self::OPERATORS[$operator]], $key, $value);
         }
-
         return $this;
     }
 
@@ -255,7 +253,6 @@ class Query
     public function whereExists($key)
     {
         $this->parseQuery->exists ($key);
-
         return $this;
     }
 
@@ -268,7 +265,6 @@ class Query
     public function whereNotExists($key)
     {
         $this->parseQuery->doesNotExist ($key);
-
         return $this;
     }
 
@@ -283,7 +279,6 @@ class Query
     public function whereLike($key, $value)
     {
         $this->parseQuery->regex ($key, $value);
-
         return $this;
     }
 
@@ -600,7 +595,6 @@ class Query
     public function matchesQuery($key, $query)
     {
         $this->parseQuery->matchesQuery ($key, $this->parseQueryFromQuery ($query));
-
         return $this;
     }
 
@@ -615,7 +609,6 @@ class Query
     public function doesNotMatchQuery($key, $query)
     {
         $this->parseQuery->doesNotMatchQuery ($key, $this->parseQueryFromQuery ($query));
-
         return $this;
     }
 
@@ -630,7 +623,6 @@ class Query
     public function matchesKeyInQuery($key, $queryKey, $query)
     {
         $this->parseQuery->matchesKeyInQuery ($key, $queryKey, $this->parseQueryFromQuery ($query));
-
         return $this;
     }
 
@@ -645,7 +637,6 @@ class Query
     public function doesNotMatchKeyInQuery($key, $queryKey, $query)
     {
         $this->parseQuery->doesNotMatchKeyInQuery ($key, $queryKey, $this->parseQueryFromQuery ($query));
-
         return $this;
     }
 
@@ -653,34 +644,35 @@ class Query
     {
         $order = strtolower($order);
         if ($order == 'asc') {
-            $this->parseQuery->ascending ($key);
+            $this->oldest ($key);
         } else {
-            $this->parseQuery->descending ($key);
+            $this->latest ($key);
         }
-
         return $this;
     }
 
     /**
-     * Add an "order by" clause for a timestamp to the query.
+     * Alias for descending.
      *
      * @param  string $column
-     * @return \Illuminate\Database\Query\Builder|static
+     * @return $this
      */
     public function latest($column = Model::CREATED_AT)
     {
-        return $this->orderBy ($column, 'desc');
+        $this->parseQuery->descending($column);
+        return $this;
     }
 
     /**
-     * Add an "order by" clause for a timestamp to the query.
+     * Alias for ascending.
      *
      * @param  string $column
-     * @return \Illuminate\Database\Query\Builder|static
+     * @return $this
      */
     public function oldest($column = Model::CREATED_AT)
     {
-        return $this->orderBy ($column);
+        $this->parseQuery->ascending($column);
+        return $this;
     }
 
     /**
@@ -857,7 +849,6 @@ class Query
         }
 
         $this->parseQuery->containedIn ($key, $values);
-
         return $this;
     }
 
@@ -883,7 +874,6 @@ class Query
         }
 
         $this->parseQuery->notContainedIn ($key, $values);
-
         return $this;
     }
 
@@ -908,7 +898,6 @@ class Query
         $this->includeKeys = array_merge ($this->includeKeys, $keys);
 
         $this->parseQuery->includeKey ($keys);
-
         return $this;
     }
 
