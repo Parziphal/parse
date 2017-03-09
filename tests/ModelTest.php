@@ -104,4 +104,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         // User Has many users
         $this->assertSame($post->id, $user->posts[0]->id);
     }
+
+    public function testHasMany()
+    {
+        $user = User::create(['name' => 'Has Many']);
+
+        $postData = [
+            'user' => $user,
+            'title' => 'Has Many Test'
+        ];
+
+        $user->posts()->create($postData);
+
+        $user = User::findOrFail($user->id);
+
+        $this->assertSame(1, $user->posts->count());
+    }
 }

@@ -7,8 +7,8 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 * Initialize Parse automatically.
 * Use facade classes that wraps Parse's classes, exposing an Eloquent-like interface.
 * Enabled to work with Parse's relations.
-* User authentication using username/password combinations and/or with Facebook.
-* Command to create ObjectModels (`parse:model Foo`).
+* User authentication with username/password combinations and/or with Facebook.
+* Command to create ObjectModels (`artisan parse:model Foo`).
 
 ## Setup
 
@@ -25,7 +25,7 @@ Publish the configuration file by running:
 
     php artisan vendor:publish --tag=parse
 
-Set your Parse server configuration in `config/parse.php`, or in your `.env` file by setting the following envs:
+Set your Parse server configuration in `config/parse.php`, or preferably in your `.env` file by setting the following envs:
 
     PARSE_APP_ID=App_ID
     PARSE_REST_KEY=REST_API_key
@@ -35,9 +35,20 @@ Set your Parse server configuration in `config/parse.php`, or in your `.env` fil
 
 ## Log in with Parse
 
-In `config/auth.php`, set your desired users driver (see below), and set the class of the User model you'd like to use (it must extend from `Parziphal\Parse\UserModel`). You could just make the default `App\User` class to extend `Parziphal\Parse\Auth\UserModel`, which is a User class ready to be used for authentication.
+Make sure your User class extends `Parziphal\Parse\UserModel`. For convenience, you could extend instead from `Parziphal\Parse\Auth\UserModel`, which is a authentication-ready User class:
 
-The config would look like this:
+```php
+namespace App;
+
+use Parziphal\Parse\Auth\UserModel;
+
+class User extends UserModel
+{
+}
+
+```
+
+Then in `config/auth.php`, set your desired users driver:
 
 ```php
 'providers' => [
@@ -48,19 +59,17 @@ The config would look like this:
 ],
 ```
 
-There are 3 users providers available:
+There are 3 drivers available:
 
 * `parse` which requires users to have a username and a password
 * `parse-facebook` which requires users to identify using their Facebook account
 * `parse-any` which lets users authenticate with either username/password or Facebook
 
-You can use the `Parziphal\Parse\Auth\AuthenticatesWithFacebook` trait in your auth controller (`App\Http\Controllers\Auth\AuthController` by default). The trait has methods to handle Facebook authentication/registration. Just bind them to a route and you're ready to go.
+You can use the `Parziphal\Parse\Auth\AuthenticatesWithFacebook` trait in your auth controller along with (not instead of) Laravel's `Illuminate\Foundation\Auth\AuthenticatesUsers` trait. The `AuthenticatesWithFacebook` trait has methods to handle Facebook authentication/registration. Just bind the method (or methods) you need to a route and you're ready to go.
 
-Note that the trait can respond in two ways: with a redirect, or with JSON. The JSON response can be configured:
+Below is the interface of the authentication trait. Note that it can respond in two ways: with a redirection (the \*Redirect methods), or with JSON (the \*Api methods), which will respond with the `$apiResponse` array.
 
 ```php
-// Interface of Parziphal\Parse\Auth\AuthenticatesWithFacebook
-// The *Api methods respond with $apiResponse.
 trait AuthenticatesWithFacebook
 {
     protected $apiResponse = ['ok' => true];
@@ -69,13 +78,21 @@ trait AuthenticatesWithFacebook
 
     public function logInOrRegisterWithFacebookRedirect(Request $request);
 
-    public function registerWithFacebookRedirect(Request $request);
-
     public function registerWithFacebookApi(Request $request);
 
+    public function registerWithFacebookRedirect(Request $request);
+
     public function registerAny(Request $request);
+
+    public function parseLogoutApi(Request $request);
+
+    public function parseLogoutRedirect(Request $request);
 }
 ```
+
+The trait expects to find the user's Facebook ID as the `id` parameter, and their access token as the `access_token` parameter.
+
+The logout methods will logout the user from both Parse and Laravel. If you're using any logout method, remember to add the method to the guest middleware's exception list.
 
 ## ObjectModels
 
@@ -164,9 +181,12 @@ ObjectModel::setDefaultUseMasterKey(true);
 
 ## Relations
 
-Supported relations are `belongsTo`, `belongsToMany`, `hasMany`, and `hasManyArray` (which is the complement of `belongsToMany`).
+Supported relations are:
 
-Please check the tests for examples.
+* `belongsTo` and its complement `hasMany`
+* `belongsToMany`, which stores parents ids in an array, and its complement `hasManyArray`
+
+Please check the tests for examples on relations.
 
 ## Inspiration from
 

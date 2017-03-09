@@ -9,7 +9,7 @@ use Parse\ParseException;
 abstract class BaseProvider implements UserProvider
 {
     protected $userClass;
-    
+
     /**
      * @param string $userClass
      */
@@ -17,7 +17,7 @@ abstract class BaseProvider implements UserProvider
     {
         $this->userClass = $userClass;
     }
-    
+
     /**
      * Retrieve a user by their unique identifier.
      *
@@ -27,7 +27,7 @@ abstract class BaseProvider implements UserProvider
     public function retrieveById($identifier)
     {
         $class = $this->userClass;
-        
+
         return $class::query(true)->find($identifier) ?: null;
     }
 
@@ -41,7 +41,7 @@ abstract class BaseProvider implements UserProvider
     public function retrieveByToken($identifier, $token)
     {
         $class = $this->userClass;
-        
+
         return $class::query(true)->where([
             'objectId'      => $identifier,
             'rememberToken' => $token
@@ -63,20 +63,20 @@ abstract class BaseProvider implements UserProvider
     protected function validatePassword(Authenticatable $user, array $credentials)
     {
         $username = $this->getUsernameFromCredentials($credentials);
-        
+
         try {
             $user->logIn($username, $credentials['password']);
         } catch (ParseException $e) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     protected function getUsernameFromCredentials(array $credentials)
     {
         $username = null;
-        
+
         if (empty($credentials['username'])) {
             if (!empty($credentials['email'])) {
                 $username = $credentials['email'];
@@ -84,7 +84,7 @@ abstract class BaseProvider implements UserProvider
         } else {
             $username = $credentials['username'];
         }
-        
+
         return $username;
     }
 
@@ -92,40 +92,40 @@ abstract class BaseProvider implements UserProvider
     {
         return array_key_exists('access_token', $credentials) && array_key_exists('id', $credentials);
     }
-    
+
     protected function retrieveByUsername(array $credentials)
     {
         $class = $this->userClass;
-        
+
         $username = $this->getUsernameFromCredentials($credentials);
-        
+
         return $class::query(true)->where(['username' => $username])->first();
     }
-    
+
     protected function retrieveByFacebook(array $credentials)
     {
         $class = $this->userClass;
-        
+
         // Check if the user exists first. If we call logInWithFacebook right away,
         // the user would be created.
         $user = $class::query(true)->where(['authData.facebook.id' => $credentials['id']])->first();
-        
+
         if (!$user) {
             return;
         }
-        
+
         try {
             return $class::logInWithFacebook($credentials['id'], $credentials['access_token']);
         } catch (ParseException $e) {
             return;
         }
     }
-    
+
     protected function validateWithPassword(Authenticatable $user, array $credentials)
     {
         return $this->validatePassword($user, $credentials);
     }
-    
+
     protected function validateWithFacebook(Authenticatable $user, array $credentials)
     {
         /**

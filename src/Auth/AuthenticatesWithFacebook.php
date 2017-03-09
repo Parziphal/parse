@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * This trait can be used in AuthController to register
- * and authenticate users with Facebook.
+ * This trait can be used along Laravel's default Auth controller to manage
+ * Parse authentication. This trait assumes the implementing class is also
+ * implementing \Illuminate\Foundation\Auth\AuthenticatesUsers.
  */
 trait AuthenticatesWithFacebook
 {
@@ -69,6 +70,34 @@ trait AuthenticatesWithFacebook
     }
 
     /**
+     * Log out from Parse, then call Laravel's logout() and return the redirect.
+     *
+     * @param \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function parseLogoutRedirect(Request $request)
+    {
+        \Parse\ParseUser::logOut();
+
+        return $this->logout($request);
+    }
+
+    /**
+     * Log out from Parse, then call Laravel's logout(), but return API response.
+     *
+     * @param \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function parseLogoutApi(Request $request)
+    {
+        \Parse\ParseUser::logOut();
+
+        $this->logout($request);
+
+        return response()->json($this->apiResponse);
+    }
+
+    /**
      * Registers a new user and/or logs the user in to Laravel.
      *
      * @param \Illuminate\Http\Request  $request
@@ -78,7 +107,11 @@ trait AuthenticatesWithFacebook
     {
         $user = $this->logInWithFacebook($request);
 
-        Auth::guard($this->getGuard())->login($user);
+        if (method_exists($this, 'getGuard')) {
+            Auth::guard($this->getGuard())->login($user);
+        } else {
+            $this->guard()->login($user);
+        }
     }
 
     /**
