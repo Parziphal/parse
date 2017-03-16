@@ -2,10 +2,10 @@
 
 namespace Parziphal\Parse\Relations;
 
-class HasMany extends HasOneOrMany
+class HasOne extends HasOneOrMany
 {
     public function getResults()
     {
-        return $this->query->get();
+        return $this->query->first();
     }
 }
