@@ -108,9 +108,9 @@ trait AuthenticatesWithFacebook
         $user = $this->logInWithFacebook($request);
 
         if (method_exists($this, 'getGuard')) {
-            Auth::guard($this->getGuard())->login($user);
+            Auth::guard($this->getGuard())->login($user, $request->has('remember'));
         } else {
-            $this->guard()->login($user);
+            $this->guard()->login($user, $request->has('remember'));
         }
     }
 
