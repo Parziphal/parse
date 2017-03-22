@@ -35,6 +35,8 @@ Set your Parse server configuration in `config/parse.php`, or preferably in your
 
 ## Log in with Parse
 
+> Note: On Laravel 5.4 the web middleware group has an entry for `\Illuminate\Session\Middleware\AuthenticateSession` (which is disabled by default). Activating this middleware will cause the "remember me" feature to fail.
+
 Make sure your User class extends `Parziphal\Parse\UserModel`. You could extend instead from `Parziphal\Parse\Auth\UserModel`, which is a authentication-ready User class:
 
 ```php
