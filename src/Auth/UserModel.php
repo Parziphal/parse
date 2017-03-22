@@ -16,19 +16,21 @@ class UserModel extends BaseUserModel implements
     CanResetPasswordContract
 {
     use Authenticatable, Authorizable, CanResetPassword;
-    
+
     public function getKeyName()
     {
         return 'objectId';
     }
-    
+
     public function getKey()
     {
         return $this->id();
     }
-    
-    public function getRememberTokenName()
+
+    public function __construct($data = null, $useMasterKey = null)
     {
-        return 'rememberToken';
+        parent::__construct($data, $useMasterKey);
+
+        $this->rememberTokenName = 'rememberToken';
     }
 }

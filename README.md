@@ -35,7 +35,7 @@ Set your Parse server configuration in `config/parse.php`, or preferably in your
 
 ## Log in with Parse
 
-Make sure your User class extends `Parziphal\Parse\UserModel`. For convenience, you could extend instead from `Parziphal\Parse\Auth\UserModel`, which is a authentication-ready User class:
+Make sure your User class extends `Parziphal\Parse\UserModel`. You could extend instead from `Parziphal\Parse\Auth\UserModel`, which is a authentication-ready User class:
 
 ```php
 namespace App;
@@ -48,18 +48,27 @@ class User extends UserModel
 
 ```
 
-Then in `config/auth.php`, set your desired users driver:
+Now we have to configure both the web guard and the users provider, so open `config/auth.php`, and make the following changes:
 
 ```php
-'providers' => [
-    'users' => [
-        'driver' => 'parse',
-        'model'  => App\User::class,
+    'guards' => [
+        'web' => [
+            'driver' => 'session-parse',
+            'provider' => 'users',
+        ],
+        // ...
     ],
-],
+
+    'providers' => [
+        'users' => [
+            'driver' => 'parse',
+            'model'  => App\User::class,
+        ],
+        // ...
+    ],
 ```
 
-There are 3 drivers available:
+There are 3 provider drivers available:
 
 * `parse` which requires users to have a username and a password
 * `parse-facebook` which requires users to identify using their Facebook account
@@ -84,15 +93,13 @@ trait AuthenticatesWithFacebook
 
     public function registerAny(Request $request);
 
-    public function parseLogoutApi(Request $request);
+    public function logoutApi(Request $request);
 
-    public function parseLogoutRedirect(Request $request);
+    // For logout with redirection simply use logout().
 }
 ```
 
-The trait expects to find the user's Facebook ID as the `id` parameter, and their access token as the `access_token` parameter.
-
-The logout methods will logout the user from both Parse and Laravel. If you're using any logout method, remember to add the method to the guest middleware's exception list.
+For Facebook login, send the user's Facebook ID as the `id` parameter, and their access token as the `access_token` parameter.
 
 ## ObjectModels
 

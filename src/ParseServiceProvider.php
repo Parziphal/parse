@@ -13,6 +13,7 @@ use Laravel\Lumen\Application as LumenApplication;
 use Parziphal\Parse\Auth\Providers\AnyUserProvider;
 use Parziphal\Parse\Auth\Providers\FacebookUserProvider;
 use Illuminate\Foundation\Application as LaravelApplication;
+use Parziphal\Parse\Auth\SessionGuard;
 
 class ParseServiceProvider extends ServiceProvider
 {
@@ -75,6 +76,7 @@ class ParseServiceProvider extends ServiceProvider
         ParseClient::initialize($config['app_id'], $config['rest_key'], $config['master_key']);
         ParseClient::setServerURL($config['server_url'], $config['mount_path']);
 
+        // Register providers
         Auth::provider('parse', function($app, array $config) {
             return new UserProvider($config['model']);
         });
@@ -85,6 +87,17 @@ class ParseServiceProvider extends ServiceProvider
 
         Auth::provider('parse-any', function($app, array $config) {
             return new AnyUserProvider($config['model']);
+        });
+
+        // Register guard
+        Auth::extend('session-parse', function($app, $name, array $config) {
+            $guard = new SessionGuard($name, Auth::createUserProvider($config['provider']), $app['session.store']);
+
+            $guard->setCookieJar($this->app['cookie']);
+            $guard->setDispatcher($this->app['events']);
+            $guard->setRequest($this->app->refresh('request', $guard, 'setRequest'));
+
+            return $guard;
         });
     }
 

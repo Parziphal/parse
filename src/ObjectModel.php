@@ -13,6 +13,7 @@ use Parse\ParseObject;
 use Illuminate\Support\Arr;
 use Parse\Internal\Encodable;
 use Illuminate\Support\Pluralizer;
+use Parziphal\Parse\Relations\HasOne;
 use Parziphal\Parse\Relations\HasMany;
 use Parziphal\Parse\Relations\Relation;
 use Parziphal\Parse\Relations\BelongsTo;
@@ -213,9 +214,11 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     {
         if ($key == 'id') {
             return $this->id();
-        }
-
-        if ($this->isRelation($key)) {
+        } elseif ($key == 'createdAt') {
+            return $this->parseObject->getCreatedAt();
+        } elseif ($key == 'updatedAt') {
+            return $this->parseObject->getUpdatedAt();
+        } elseif ($this->isRelation($key)) {
             return $this->getRelationValue($key);
         }
 
@@ -386,22 +389,18 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     {
         $array = $this->parseObjectToArray($this->parseObject);
 
-        $relations = array_diff_key($this->relations, $array);
+        foreach ($this->relations as $name => $relation) {
+            if ($relation instanceof Collection) {
+                $coll = [];
 
-        if ($relations) {
-          foreach ($this->relations as $name => $relation) {
-              if ($relation instanceof Collection) {
-                  $coll = [];
+                foreach ($relation as $object) {
+                    $coll[] = $object->toArray();
+                }
 
-                  foreach ($relation as $object) {
-                      $coll[] = $object->toArray();
-                  }
-
-                  $array[$name] = $coll;
-              } else {
-                  $array[$name] = $relation->toArray();
-              }
-          }
+                $array[$name] = $coll;
+            } else {
+                $array[$name] = $relation->toArray();
+            }
         }
 
         return $array;
@@ -413,6 +412,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function parseObjectToArray(ParseObject $object)
     {
         $array = $object->getAllKeys();
+
         $array['objectId']  = $object->getObjectId();
 
         $createdAt = $object->getCreatedAt();
@@ -521,10 +521,19 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     protected function hasMany($otherClass, $key = null)
     {
         if (!$key) {
-            $key = lcfirst(static::parseClassName());
+            $key = $this->classNameToKey(static::parseClassName());
         }
 
         return new HasMany($otherClass::query(), $this, $key);
+    }
+
+    protected function hasOne($otherClass, $key = null)
+    {
+        if (!$key) {
+            $key = $this->classNameToKey(static::parseClassName());
+        }
+
+        return new HasOne($otherClass::query(), $this, $key);
     }
 
     /**
@@ -564,5 +573,14 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     protected function getCallerFunctionName()
     {
         return debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2]['function'];
+    }
+
+    protected function classNameToKey($className)
+    {
+        if (strpos($className, '_') === 0) {
+            $className = substr($className, 1);
+        }
+
+        return lcfirst($className);
     }
 }

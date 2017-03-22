@@ -70,28 +70,11 @@ trait AuthenticatesWithFacebook
     }
 
     /**
-     * Log out from Parse, then call Laravel's logout() and return the redirect.
-     *
      * @param \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function parseLogoutRedirect(Request $request)
+    public function logoutApi(Request $request)
     {
-        \Parse\ParseUser::logOut();
-
-        return $this->logout($request);
-    }
-
-    /**
-     * Log out from Parse, then call Laravel's logout(), but return API response.
-     *
-     * @param \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function parseLogoutApi(Request $request)
-    {
-        \Parse\ParseUser::logOut();
-
         $this->logout($request);
 
         return response()->json($this->apiResponse);
@@ -108,8 +91,10 @@ trait AuthenticatesWithFacebook
         $user = $this->logInWithFacebook($request);
 
         if (method_exists($this, 'getGuard')) {
+            // Laravel 5.2
             Auth::guard($this->getGuard())->login($user, $request->has('remember'));
         } else {
+            // Laravel 5.3+
             $this->guard()->login($user, $request->has('remember'));
         }
     }
@@ -117,11 +102,9 @@ trait AuthenticatesWithFacebook
     /**
      * Registers a new user or log in into Parse if the user exists.
      * Returns null if an error occured.
-     * The ParseException is not catched as it normally shouldn't happen.
      *
      * @param Request  $request
      * @return \Parziphal\Parse\UserModel|null
-     * @throws ParseException
      */
     protected function logInWithFacebook(Request $request)
     {
