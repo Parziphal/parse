@@ -156,6 +156,9 @@ $posts = Post::where([
   ->get();
 
 $post = Post::firstOrCreate($data);
+
+// Load relations (ParseQuery::include())
+$posts = Post::with('creator', 'comments.user')->get();
 ```
 
 ## Using Master Key
@@ -167,6 +170,12 @@ Objects and queries can be configured to use Master Key with the `$useMasterKey`
 $post = new Post($data, true);
 // or use the setter method:
 $post->useMasterKey(true)->save();
+
+// Passing an anonymous function will set useMasterKey to true,
+// then execute the function, then useMasterKey will be set to false.
+$post->useMasterKey(function($post) {
+    $post->increment('views')->save();
+});
 
 // When creating queries, pass as parameter:
 $query = Post::query(true);
