@@ -23,6 +23,12 @@ class BelongsTo extends Relation
     {
         $class = $this->embeddedClass;
 
-        return (new $class($this->childObject->getParseObject()->get($this->keyName)))->fetch();
+        $parent = $this->childObject->getParseObject()->get($this->keyName);
+
+        if ($parent) {
+            return (new $class($parent))->fetch();
+        } else {
+            return null;
+        }
     }
 }
