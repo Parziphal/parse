@@ -509,7 +509,39 @@ class Query
     {
         $className = $this->fullClassName;
 
-        return new $className($data, $this->useMasterKey);
+        $model = new $className($data, $this->useMasterKey);
+
+        // Poke relations
+        foreach ($this->includeKeys as $relationName) {
+            if (strpos($relationName, '.') > 0) {
+                $this->pokeNestedRelations($model, explode('.', $relationName));
+            } else {
+                $model->{$relationName};
+            }
+        }
+
+        return $model;
+    }
+
+    protected function pokeNestedRelations(ObjectModel $parent, array $relations)
+    {
+        $max = count($relations);
+
+        for ($i = 0; $i < $max; $i++) {
+            if ($parent instanceof Collection) {
+                $relationName = array_shift($relations);
+
+                foreach ($parent as $member) {
+                    $member->{$relationName};
+                    $this->pokeNestedRelations($member, $relations);
+                }
+
+                break;
+            } else {
+                $parent = $parent->{$relations[$i]};
+                array_shift($relations);
+            }
+        }
     }
 
     /**
