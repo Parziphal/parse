@@ -2,6 +2,7 @@
 
 namespace Parziphal\Parse;
 
+use Closure;
 use DateTime;
 use Traversable;
 use LogicException;
@@ -177,9 +178,22 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         $this->parseObject = clone $this->parseObject;
     }
 
+    /**
+     * If $value is a Closure, useMasterKey will be set to true,
+     * then the Closure will be executed, then useMasterKey will be
+     * set to false.
+     *
+     * @param bool|Closure $value
+     */
     public function useMasterKey($value)
     {
-        $this->useMasterKey = (bool)$value;
+        if ($value instanceof Closure) {
+            $this->useMasterKey = true;
+            $value($this);
+            $this->useMasterKey = false;
+        } else {
+            $this->useMasterKey = (bool)$value;
+        }
 
         return $this;
     }
