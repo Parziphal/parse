@@ -63,9 +63,10 @@ abstract class BaseProvider implements UserProvider
     protected function validatePassword(Authenticatable $user, array $credentials)
     {
         $username = $this->getUsernameFromCredentials($credentials);
+        $userClass = get_class($user);
 
         try {
-            $user->logIn($username, $credentials['password']);
+            $userClass::logIn($username, $credentials['password']);
         } catch (ParseException $e) {
             return false;
         }

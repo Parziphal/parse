@@ -78,7 +78,7 @@ There are 3 provider drivers available:
 
 You can use the `Parziphal\Parse\Auth\AuthenticatesWithFacebook` trait in your auth controller along with (not instead of) Laravel's `Illuminate\Foundation\Auth\AuthenticatesUsers` trait. The `AuthenticatesWithFacebook` trait has methods to handle Facebook authentication/registration. Just bind the method (or methods) you need to a route and you're ready to go.
 
-Below is the interface of the authentication trait. Note that it can respond in two ways: with a redirection (the \*Redirect methods), or with JSON (the \*Api methods), which will respond with the `$apiResponse` array.
+Below is the interface of the authentication/registration trait. Note that it can respond in two ways: with a redirection (the \*Redirect methods), or with JSON (the \*Api methods), which will respond with the `$apiResponse` array.
 
 ```php
 trait AuthenticatesWithFacebook
@@ -101,7 +101,30 @@ trait AuthenticatesWithFacebook
 }
 ```
 
-For Facebook login, send the user's Facebook ID as the `id` parameter, and their access token as the `access_token` parameter.
+For Facebook login, the trait expects to find the user's Facebook ID as the `id` parameter, and their access token as the `access_token` parameter.
+
+### Username/password registration
+
+There are things to take into consideration regarding this:
+
+* The validator returned in the `validator` method has a `unique` constraint on the `email`, which will trigger database searches, leading to an error; make sure to remove that `unique` constraint.
+
+* You'll also have to change the `create` method on your registration controller according to your needs. It could look like this (specially if you're using the auth scaffold):
+
+```php
+protected function create(array $data)
+{
+    $user = new User();
+    $user->name = $data['name'];
+    $user->username = $data['email'];
+    $user->password = $data['password'];
+    $user->signUp();
+
+    return $user;
+}
+```
+
+Remember that on Parse, the `username` field is the login name of the user, so you'll have to store their email under the `username` key if you require users to login using their email.
 
 ## ObjectModels
 

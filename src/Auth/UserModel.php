@@ -19,7 +19,7 @@ class UserModel extends BaseUserModel implements
 
     public function getKeyName()
     {
-        return 'objectId';
+        return 'id';
     }
 
     public function getKey()
