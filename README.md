@@ -107,9 +107,9 @@ For Facebook login, the trait expects to find the user's Facebook ID as the `id`
 
 There are things to take into consideration regarding this:
 
-* The validator returned in the `validator` method has a `unique` constraint on the `email`, which will trigger database searches, leading to an error; make sure to remove that `unique` constraint.
+* The validator returned by the `validator` method of the registration controller has a `unique` constraint on the `email`, which will trigger database searches, leading to an error; make sure to remove that `unique` constraint.
 
-* You'll also have to change the `create` method on your registration controller according to your needs. It could look like this (specially if you're using the auth scaffold):
+* You'll also have to change the `create` method according to your needs. It could look like this (specially if you're using the auth scaffold):
 
 ```php
 protected function create(array $data)
