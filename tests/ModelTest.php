@@ -3,13 +3,14 @@
 namespace Parziphal\Parse\Test;
 
 use Parse\ParseObject;
+use PHPUnit\Framework\TestCase;
 use Parziphal\Parse\ObjectModel;
 use Parziphal\Parse\Test\Models\Post;
 use Parziphal\Parse\Test\Models\User;
 use Parziphal\Parse\Test\Models\Category;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class ModelTest extends \PHPUnit_Framework_TestCase
+class ModelTest extends TestCase
 {
     public function testPersistance()
     {
