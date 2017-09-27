@@ -8,11 +8,15 @@ This library pretends to make Parse usable in a Eloquent-like manner. For Larave
 * Use facade classes that wraps Parse's classes, exposing an Eloquent-like interface.
 * Enabled to work with Parse's relations.
 * User authentication with username/password combinations and/or with Facebook.
-* Command to create ObjectModels (`artisan parse:model Foo`).
+* Command to create ObjectModels (`artisan parse:model SomeModel`).
 
 ## Setup
 
-Add the service provider in your `config/app.php` file:
+Install the library with Composer:
+
+    composer require parziphal/parse
+
+Add the service provider in your `config/app.php` file (this is done automatically on Laravel 5.5+):
 
 ```php
 'providers' => [
