@@ -91,7 +91,11 @@ class BelongsToMany extends Relation
     {
         $parentParse = $this->parentObject->getParseObject();
 
-        $count = count($parentParse->{$this->keyName});
+        if ($parentParse->{$this->keyName}) {
+            $count = count($parentParse->{$this->keyName});
+        } else {
+            $count = 0;
+        }
 
         if ($unique) {
             $this->parentObject->addUnique($this->keyName, [$other->getParseObject()]);
