@@ -83,11 +83,17 @@ class ModelTest extends TestCase
         $postB = Post::create(['title' => 'Pressing buttons']);
         $postB->categories()->save($category);
 
+        $postC = Post::create(['title' => 'Post C']);
+
+        $category->posts()->save($postC);
+        $category->posts()->create(['title' => 'Some new test']);
+
         $category = Category::with('posts')->findOrFail($category->id);
 
-        $this->assertSame(2, $category->posts->count());
+        $this->assertSame(4, $category->posts->count());
         $this->assertSame($postA->id, $category->posts[0]->id);
         $this->assertSame($postB->id, $category->posts[1]->id);
+        $this->assertSame($postC->id, $category->posts[2]->id);
     }
 
     public function testBelongsToAndHasMany()
@@ -111,7 +117,6 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'Has Many']);
 
         $postData = [
-            'user' => $user,
             'title' => 'Has Many Test'
         ];
 
@@ -120,5 +125,14 @@ class ModelTest extends TestCase
         $user = User::findOrFail($user->id);
 
         $this->assertSame(1, $user->posts->count());
+
+        $post = new Post();
+        $post->user = $user;
+        $post->title = 'Yes';
+        $post->save();
+
+        $user = User::findOrFail($user->id);
+
+        $this->assertSame(2, $user->posts->count());
     }
 }
