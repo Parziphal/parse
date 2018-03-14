@@ -53,7 +53,9 @@ class Post extends ObjectModel
 }
 ```
 
-And that's it. ObjectModels behave just as an Eloquent model, so you can do stuff like:
+And that's it. However, remember that you can use the Artisan command `php artisan parse:model SomeModel` to easily create a model.
+
+ObjectModels behave just as an Eloquent model, so you can do stuff like:
 
 ```php
 // Instantiate with data
