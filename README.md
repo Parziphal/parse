@@ -16,7 +16,7 @@ Install the library with Composer:
 
     composer require parziphal/parse
 
-Add the service provider in your `config/app.php` file (this is done automatically on Laravel 5.5+):
+Add the service provider in your `config/app.php` file:
 
 ```php
 'providers' => [
@@ -29,13 +29,181 @@ Publish the configuration file by running:
 
     php artisan vendor:publish --tag=parse
 
-Set your Parse server configuration in `config/parse.php`, or preferably in your `.env` file by setting the following envs:
+The command creates a file at `config/parse.php`, where you can set your Parse server configuration, but instead of editing that file, you can set your configuration in your `.env` file by setting the following variables:
 
-    PARSE_APP_ID=App_ID
+    PARSE_APP_ID=Your_App_ID
     PARSE_REST_KEY=REST_API_key
     PARSE_MASTER_KEY=Master_key
     PARSE_SERVER_URL=http://127.0.0.1:1337
     PARSE_MOUNT_PATH=/parse
+
+The `REST_API_key` variable is optional as Parse doesn't require that key anymore.
+
+## ObjectModels
+
+Create models extending the `Parziphal\Parse\ObjectModel` class:
+
+```php
+namespace App;
+
+use Parziphal\Parse\ObjectModel;
+
+class Post extends ObjectModel
+{
+}
+```
+
+And that's it. ObjectModels behave just as an Eloquent model, so you can do stuff like:
+
+```php
+// Instantiate with data
+$post = new Post(['title' => 'Some Title']);
+
+// Create
+$post = Post::create(['title' => 'Some Title', 'acl' => $acl]);
+
+// Get objectId
+echo $post->id;   // EWFppWR4qf
+echo $post->id(); // EWFppWR4qf
+
+// Update
+$post->title = 'New Title';
+$post->save();
+// or
+$post->update(['foo' => true]);
+
+// Find or fail
+$post = Post::findOrFail($id);
+
+// Get all records
+$posts = Post::all();
+
+// Delete is like Eloquent's delete: it will delete the object
+$post->delete();
+// To remove a key (ParseObject's `delete` method), use `removeKey`
+$post->removeKey($someKey);
+
+// Create a pointer object
+$pointer = Post::pointer($postId);
+```
+
+## Relations
+
+Supported relations are:
+
+* `belongsTo` and its complement `hasMany`
+* `belongsToMany`, which stores parents ids in an array, and its complement `hasManyArray`
+
+You use them like this:
+
+```php
+
+use Parziphal\Parse\ObjectModel;
+
+class Post extends ObjectModel
+{
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+
+// Having the above class where categories() is a `belongsToMany` relation,
+// the class Category would have a posts() relation of type `hasManyArray`:
+class Category extends ObjectModel
+{
+    public function posts()
+    {
+        return $this->hasManyArray(Post::class);
+    }
+}
+
+// This would be the User class:
+class User extends ObjectModel
+{
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+}
+
+// Relate a post with a category (belongsToMany):
+$post->categories()->save($someCategory);
+
+// Relate a category with posts (inverse of above, hasManyArray):
+$category->posts()->save($post);
+$category->posts()->create($arrayWithPostData);
+
+// Relate a post with a user (belongsTo):
+$post->user = $user;
+$post->save();
+
+// Relate a use with a post (inverse of above, hasMany):
+$user->posts()->create($arrayWithPostData);
+```
+
+## Queries
+
+`Parziphal\Parse\Query` is a wrapper for `Parse\ParseQuery`, which also behaves like Eloquent Builder:
+
+```php
+// Note that `get` is like Eloquent Builder's `get`, which executes the query,
+// and not like ParseQuery's `get` which finds an object by id.
+$posts = Post::where('createdAt', '<=', $date)->descending('score')->get();
+
+$posts = Post::where([
+    'creator' => $user,
+    'title' => $title
+  ])
+  ->containedIn('foo', $foos)
+  ->get();
+
+$post = Post::firstOrCreate($data);
+
+// Load relations (ParseQuery::include())
+$posts = Post::with('creator', 'comments.user')->get();
+```
+
+## Using Master Key
+
+Objects and queries can be configured to use Master Key with the `$useMasterKey` property. This can be done at class level, at instantiation, or by using the setter method:
+
+```php
+// In objects, pass a second parameter when instantiating:
+$post = new Post($data, true);
+// or use the setter method:
+$post->useMasterKey(true);
+
+// Passing an anonymous function will set useMasterKey to true,
+// then execute the function, then useMasterKey will be set to false.
+$post->useMasterKey(function($post) {
+    $post->increment('views')->save();
+});
+
+// When creating queries, pass as parameter:
+$query = Post::query(true);
+// or use the setter method:
+$query->userMasterKey(true);
+
+// Other object methods that accept a $useMasterKey value are:
+$post  = Post::create($data, true);
+$posts = Post::all(true);
+
+// To configure a single model to _always_ use master key, define
+// a protected static property `$defaultUseMasterKey`:
+class Post extends ObjectModel
+{
+    protected static $defaultUseMasterKey = true;
+}
+
+// Finally, you can make all models use master key with this:
+Parziphal\Parse\ObjectModel::setDefaultUseMasterKey(true);
+```
 
 ## Log in with Parse
 
@@ -129,109 +297,6 @@ protected function create(array $data)
 ```
 
 Remember that on Parse, the `username` field is the login name of the user, so you'll have to store their email under the `username` key if you require users to login using their email.
-
-## ObjectModels
-
-The `Parziphal\Parse\ObjectModel` class is a wrapper for `Parse\ParseObject`. It behaves as an Eloquent model, so you could do stuff like:
-
-```php
-// Instantiate with data
-$post = new Post(['title' => 'Some Title']);
-
-// Create
-$post = Post::create(['title' => 'Some Title', 'acl' => $acl]);
-
-// Get objectId
-echo $post->id;   // EWFppWR4qf
-echo $post->id(); // EWFppWR4qf
-
-// Update
-$post->title = "New Title";
-$post->save();
-// or
-$post->update(['foo' => true]);
-
-// Find or fail
-$post = Post::findOrFail($id);
-
-// Get all records
-$posts = Post::all();
-
-// Delete is like Eloquent's delete: it will delete the object
-$post->delete();
-// To remove a key (ParseObject's `delete` method), use `removeKey`
-$post->removeKey($someKey);
-
-// Create a pointer object
-$pointer = Post::pointer($postId);
-```
-
-## Queries
-
-`Parziphal\Parse\Query` is a wrapper for `Parse\ParseQuery`, which also behaves like a Eloquent Builder:
-
-```php
-// Note that `get` is like Eloquent Builder's `get`, which executes the query,
-// and not like ParseQuery's `get` which finds an object by id.
-$posts = Post::where('createdAt', '<=', $date)->descending('score')->get();
-
-$posts = Post::where([
-    'creator' => $user,
-    'title' => $title
-  ])
-  ->containedIn('foo', $foos)
-  ->get();
-
-$post = Post::firstOrCreate($data);
-
-// Load relations (ParseQuery::include())
-$posts = Post::with('creator', 'comments.user')->get();
-```
-
-## Using Master Key
-
-Objects and queries can be configured to use Master Key with the `$useMasterKey` property. This can be done at class level, at instantiation, or by using the setter method:
-
-```php
-// In objects, pass a second parameter when instantiating:
-$post = new Post($data, true);
-// or use the setter method:
-$post->useMasterKey(true)->save();
-
-// Passing an anonymous function will set useMasterKey to true,
-// then execute the function, then useMasterKey will be set to false.
-$post->useMasterKey(function($post) {
-    $post->increment('views')->save();
-});
-
-// When creating queries, pass as parameter:
-$query = Post::query(true);
-// or use the setter method:
-$query->userMasterKey(true);
-
-// Other object methods that accept a $useMasterKey value are:
-$post  = Post::create($data, true);
-$posts = Post::all(true);
-
-// To configure a model to always use Master Key, define
-// a protected static property `$defaultUseMasterKey`:
-class Post extends ObjectModel
-{
-    protected static $defaultUseMasterKey = true;
-}
-
-// Or use this to make all models use master key by default
-ObjectModel::setDefaultUseMasterKey(true);
-```
-
-## Relations
-
-Supported relations are:
-
-* `belongsTo` and its complement `hasMany`
-* `belongsToMany`, which stores parents ids in an array, and its complement `hasManyArray`
-
-Please check the tests for examples on relations.
 
 ## Inspiration from
 
