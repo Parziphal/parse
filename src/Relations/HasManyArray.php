@@ -11,4 +11,19 @@ class HasManyArray extends HasMany
     {
         $this->query->containedIn($this->foreignKey, $this->parentObject);
     }
+
+    /**
+     * Relate other object to this object.
+     *
+     * @param  ObjectModel $model The child object
+     * @return ObjectModel
+     */
+    public function save(ObjectModel $model)
+    {
+        $model->addUnique($this->foreignKey, [$this->parentObject->getParseObject()]);
+
+        $model->save();
+
+        return $model;
+    }
 }
