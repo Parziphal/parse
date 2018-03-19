@@ -91,6 +91,12 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
         return new Query(static::parseClassName(), static::class, $useMasterKey);
     }
 
+    /**
+     * ParseServer sets a default limit of 100 if no limit is specified. For that reason
+     * this method can't do what its name suggests; it should be removed.
+     *
+     * @deprecated
+     */
     public static function all($useMasterKey = null)
     {
         if ($useMasterKey === null) {

@@ -77,9 +77,6 @@ $post->update(['foo' => true]);
 // Find or fail
 $post = Post::findOrFail($id);
 
-// Get all records
-$posts = Post::all();
-
 // Delete is like Eloquent's delete: it will delete the object
 $post->delete();
 // To remove a key (ParseObject's `delete` method), use `removeKey`
