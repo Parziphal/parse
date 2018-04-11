@@ -187,7 +187,7 @@ $post->useMasterKey(function($post) {
 // When creating queries, pass as parameter:
 $query = Post::query(true);
 // or use the setter method:
-$query->userMasterKey(true);
+$query->useMasterKey(true);
 
 // Other object methods that accept a $useMasterKey value are:
 $post  = Post::create($data, true);
