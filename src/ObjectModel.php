@@ -103,9 +103,9 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
             $useMasterKey = static::$defaultUseMasterKey;
         }
 
-        return static::query($useMasterKey)->get();
+        return static::query($useMasterKey)->getAll();
     }
-
+    
     /**
      * Set the default value for defaultUseMasterKey. This is intended to be used
      * as a global configuration, hence the value is set to "self" and not to "static".
