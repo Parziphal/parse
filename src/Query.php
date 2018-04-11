@@ -376,6 +376,39 @@ class Query
     }
 
     /**
+     * Get all records.
+     *
+     * 
+     *
+     * @return Collection
+     */
+    public function getAll()
+    {
+        $results = [];
+
+        $query = $this->parseQuery
+            ->ascending('objectId')
+            ->limit(1000)
+            ->find($this->useMasterKey);
+
+        $results = array_merge($results, $query);
+        
+        while (!empty($query)) {
+            $lastObjectId = end($query)->getObjectId();
+            
+            $query = $this->parseQuery
+                ->greaterThan('objectId', $lastObjectId)
+                ->ascending('objectId')
+                ->limit(1000)
+                ->find($this->useMasterKey);
+
+            $results = array_merge($results, $query);
+        }
+
+        return $this->createModels($results);
+    }
+    
+    /**
      * Allow to pass instances of either Query or ParseQuery.
      *
      * @param string           $key
