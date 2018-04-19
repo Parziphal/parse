@@ -155,6 +155,7 @@ $user->posts()->create($arrayWithPostData);
 // and not like ParseQuery's `get` which finds an object by id.
 $posts = Post::where('createdAt', '<=', $date)->descending('score')->get();
 
+// passing an array of conditions
 $posts = Post::where([
     ['status', '=', '1'],
     ['subscribed', '<>', '1']
