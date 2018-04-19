@@ -19,6 +19,9 @@ class Query
         '<'  => 'lessThan',
         '<=' => 'lessThanOrEqualTo',
         'in' => 'containedIn',
+        '%%' => 'matches',
+        '.%' => 'startsWith',
+        '%.' => 'endsWith'
     ];
 
     /**
