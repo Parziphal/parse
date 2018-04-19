@@ -156,6 +156,12 @@ $user->posts()->create($arrayWithPostData);
 $posts = Post::where('createdAt', '<=', $date)->descending('score')->get();
 
 $posts = Post::where([
+    ['status', '=', '1'],
+    ['subscribed', '<>', '1']
+  ])
+  ->get();
+
+$posts = Post::where([
     'creator' => $user,
     'title' => $title
   ])
