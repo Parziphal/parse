@@ -173,11 +173,26 @@ class Query
      * @return $this
      */
     public function where($key, $operator = null, $value = null)
-    {
+    {   
         if (is_array($key)) {
             $where = $key;
-
+            
             foreach ($where as $key => $value) {
+                if (is_array($value)) {
+                    
+                    if (count($value) !== 3) {
+                        continue;
+                    }
+
+                    if (!array_key_exists($value[1], self::OPERATORS)) {
+                        throw new Exception("Invalid operator: " . $value[1]);
+                    }
+
+                    call_user_func([$this, self::OPERATORS[$value[1]]], $value[0], $value[2]);
+                    
+                    continue;
+                }
+                
                 if ($value instanceof ObjectModel) {
                     $value = $value->getParseObject();
                 }
