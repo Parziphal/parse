@@ -188,6 +188,10 @@ class Query
                         throw new Exception("Invalid operator: " . $value[1]);
                     }
 
+                    if ($value[2] instanceof ObjectModel) {
+                        $value[2] = $value[2]->getParseObject();
+                    }
+
                     if (self::OPERATORS[$value[1]] === 'matches') {
                         call_user_func([$this, self::OPERATORS[$value[1]]], $value[0], $value[2], 'i');
                     } else {
