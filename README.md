@@ -158,7 +158,7 @@ $posts = Post::where('createdAt', '<=', $date)->descending('score')->get();
 // passing an array of conditions
 $posts = Post::where([
     ['status', '=', '1'],
-    ['subscribed', '<>', '1']
+    ['subscribed', '!=', '1']
   ])
   ->get();
 
