@@ -389,7 +389,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function fetch($force = false)
     {
         if (!$this->hasBeenFetched() || $force) {
-            $this->parseObject->fetch();
+            $this->parseObject->fetch($this->useMasterKey);
         }
 
         return $this;
