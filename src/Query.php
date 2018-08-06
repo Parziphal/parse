@@ -218,7 +218,11 @@ class Query
                 throw new Exception("Invalid operator: " . $operator);
             }
 
-            call_user_func([$this, self::OPERATORS[$operator]], $key, $value);
+            if (self::OPERATORS[$operator] === 'matches') {
+                call_user_func([$this, self::OPERATORS[$operator]], $key, $value, 'i');
+            } else {
+                call_user_func([$this, self::OPERATORS[$operator]], $key, $value);
+            }
         }
 
         return $this;
