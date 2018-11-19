@@ -19,6 +19,9 @@ class Query
         '<'  => 'lessThan',
         '<=' => 'lessThanOrEqualTo',
         'in' => 'containedIn',
+        '%%' => 'matches',
+        '.%' => 'startsWith',
+        '%.' => 'endsWith'
     ];
 
     /**
@@ -170,11 +173,34 @@ class Query
      * @return $this
      */
     public function where($key, $operator = null, $value = null)
-    {
+    {   
         if (is_array($key)) {
             $where = $key;
-
+            
             foreach ($where as $key => $value) {
+                if (is_array($value)) {
+                    
+                    if (count($value) !== 3) {
+                        continue;
+                    }
+
+                    if (!array_key_exists($value[1], self::OPERATORS)) {
+                        throw new Exception("Invalid operator: " . $value[1]);
+                    }
+
+                    if ($value[2] instanceof ObjectModel) {
+                        $value[2] = $value[2]->getParseObject();
+                    }
+
+                    if (self::OPERATORS[$value[1]] === 'matches') {
+                        call_user_func([$this, self::OPERATORS[$value[1]]], $value[0], $value[2], 'i');
+                    } else {
+                        call_user_func([$this, self::OPERATORS[$value[1]]], $value[0], $value[2]);
+                    }
+                    
+                    continue;
+                }
+                
                 if ($value instanceof ObjectModel) {
                     $value = $value->getParseObject();
                 }
@@ -192,7 +218,11 @@ class Query
                 throw new Exception("Invalid operator: " . $operator);
             }
 
-            call_user_func([$this, self::OPERATORS[$operator]], $key, $value);
+            if (self::OPERATORS[$operator] === 'matches') {
+                call_user_func([$this, self::OPERATORS[$operator]], $key, $value, 'i');
+            } else {
+                call_user_func([$this, self::OPERATORS[$operator]], $key, $value);
+            }
         }
 
         return $this;
@@ -375,6 +405,39 @@ class Query
         return $this->createModels($this->parseQuery->find($this->useMasterKey));
     }
 
+    /**
+     * Get all records.
+     *
+     * 
+     *
+     * @return Collection
+     */
+    public function getAll()
+    {
+        $results = [];
+
+        $query = $this->parseQuery
+            ->ascending('objectId')
+            ->limit(1000)
+            ->find($this->useMasterKey);
+
+        $results = array_merge($results, $query);
+        
+        while (!empty($query)) {
+            $lastObjectId = end($query)->getObjectId();
+            
+            $query = $this->parseQuery
+                ->greaterThan('objectId', $lastObjectId)
+                ->ascending('objectId')
+                ->limit(1000)
+                ->find($this->useMasterKey);
+
+            $results = array_merge($results, $query);
+        }
+
+        return $this->createModels($results);
+    }
+    
     /**
      * Allow to pass instances of either Query or ParseQuery.
      *

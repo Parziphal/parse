@@ -103,9 +103,9 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
             $useMasterKey = static::$defaultUseMasterKey;
         }
 
-        return static::query($useMasterKey)->get();
+        return static::query($useMasterKey)->getAll();
     }
-
+    
     /**
      * Set the default value for defaultUseMasterKey. This is intended to be used
      * as a global configuration, hence the value is set to "self" and not to "static".
@@ -389,7 +389,7 @@ abstract class ObjectModel implements Arrayable, Jsonable, JsonSerializable
     public function fetch($force = false)
     {
         if (!$this->hasBeenFetched() || $force) {
-            $this->parseObject->fetch();
+            $this->parseObject->fetch($this->useMasterKey);
         }
 
         return $this;
