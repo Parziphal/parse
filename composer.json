@@ -6,7 +6,7 @@
     "require": {
         "php": ">=5.6",
         "laravel/framework": "^5.2",
-        "parse/php-sdk": "~1.4.0"
+        "parse/php-sdk": "^1.2.0"
     },
     "autoload": {
         "psr-4": {
