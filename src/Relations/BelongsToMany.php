@@ -82,7 +82,7 @@ class BelongsToMany extends Relation
             $class = $this->embeddedClass;
 
             foreach ($items as $item) {
-                $this->collection[] = new $class($item);
+                $this->collection[] = new $class($item->fetch());
             }
         }
     }
