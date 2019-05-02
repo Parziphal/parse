@@ -76,8 +76,13 @@ class BelongsToMany extends Relation
 
     protected function createItems()
     {
-        $items = $this->parentObject->getParseObject()->get($this->keyName);
-
+        $query = $this->parentObject
+            ->getParseObject()
+            ->get($this->keyName)
+            ->getQuery();
+            
+        $items = $query->find();
+        
         if ($items) {
             $class = $this->embeddedClass;
 
