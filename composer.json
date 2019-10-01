@@ -5,7 +5,7 @@
     "license": "MIT",
     "require": {
         "php": ">=5.6",
-        "laravel/framework": "^5.2",
+        "laravel/framework": "^6.0",
         "parse/php-sdk": "^1.6.0"
     },
     "autoload": {
