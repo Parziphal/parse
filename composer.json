@@ -1,5 +1,5 @@
 {
-    "name": "parziphal/parse",
+    "name": "pimpolloasesino/parse",
     "description": "An Eloquent-like interface for Parse",
     "keywords": ["laravel", "parse", "sdk", "parse-sdk", "eloquent"],
     "license": "MIT",
