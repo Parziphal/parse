@@ -5,7 +5,7 @@
     "license": "MIT",
     "require": {
         "php": ">=5.6",
-        "laravel/framework": "^5.2",
+        "laravel/framework": "^5.2 || ^6.0 || ^7.0",
         "parse/php-sdk": "^1.2.0"
     },
     "autoload": {
@@ -19,5 +19,8 @@
                 "Parziphal\\Parse\\ParseServiceProvider"
             ]
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.1"
     }
 }
